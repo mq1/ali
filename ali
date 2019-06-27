@@ -1,0 +1,289 @@
+#!/usr/bin/env bash
+
+# SUGGESTED PARTITION SCHEME
+# ==========================
+# DEVICE       PARTITION                         SIZE
+# /dev/sda1    Windows Recovery Environment      500MiB
+# /dev/sda2    Windows ESP                       100MiB
+# /dev/sda3    Microsoft Reserved Partition      16MiB
+# /dev/sda4    Microsoft basic data partition    Arbitrary
+# /dev/sda5    Linux ESP                         50MiB
+# /dev/sda6    Linux Boot                        200MiB
+# /dev/sda6    Linux Swap                        8GiB
+# /dev/sda7    Linux Root                        Remaining space
+
+_TO_INSTALL=" \
+base \
+base-devel \
+f2fs-tools \
+sudo \
+networkmanager \
+openssh \
+git \
+zsh \
+bat \
+lsd \
+neovim \
+xclip \
+flatpak \
+noto-fonts \
+noto-fonts-cjk \
+noto-fonts-emoji \
+mpv \
+youtube-dl \
+ntfs-3g \
+libva-utils \
+intel-ucode \
+grub \
+efibootmgr \
+"
+
+_TO_INSTALL_AUR="yay-bin"
+
+is_not_null() {
+    if [ -z "$1" ]; then
+        echo " "
+    else
+        echo "*"
+    fi
+}
+
+current_config() {
+    cat <<EOF
+Current config
+==============
+
+[e]fi           => $_EFI_PARTITION
+[b]oot          => $_BOOT_PARTITION 
+[s]wap          => $_SWAP_PARTITION
+[r]oot          => $_ROOT_PARTITION
+
+[t]ime zone     => $_TIME_ZONE
+[l]ocale        => $_LOCALE
+[h]ostname      => $_HOSTNAME
+[u]ser          => $_USER_NAME
+[p]assword      => $_PASSWORD
+
+Installing
+[$(is_not_null $_INSTALL_NVIDIA)] [n]vidia
+[$(is_not_null $_INSTALL_INTEL)] [i]ntel-media-driver
+[$(is_not_null $_INSTALL_GNOME)] [g]nome
+[$(is_not_null $_INSTALL_KDE)] [k]de
+[$(is_not_null $_INSTALL_FIREFOX)] [f]irefox
+[$(is_not_null $_INSTALL_CHROME)] [c]hrome
+[$(is_not_null $_INSTALL_CHROMIUM)] c[h]romium
+[$(is_not_null $_INSTALL_BRAVE)] br[a]ve
+[$(is_not_null $_INSTALL_VSCODIUM)] [v]scodium
+
+[d]one
+e[x]it
+EOF
+}
+
+prompt() {
+    echo -e "\n"
+    read -p "Action => " action
+    case "$action" in
+        e) read -p "EFI partition => " _EFI_PARTITION;;
+        b) read -p "Boot partition => " _BOOT_PARTITION;;
+        s) read -p "Swap partition => " _SWAP_PARTITION;;
+        r) read -p "Root partition => " _ROOT_PARTITION;;
+        t) read -p "Time zone => " _TIME_ZONE;;
+        l) read -p "Locale => " _LOCALE;;
+        h) read -p "Hostname => " _HOSTNAME;;
+        u) read -p "User name => " _USER_NAME;;
+        p) read -p "Password => " _PASSWORD;;
+        n) if [ -z "$_INSTALL_NVIDIA" ]; then _INSTALL_NVIDIA=true; else unset _INSTALL_NVIDIA; fi;;
+        g) if [ -z "$_INSTALL_GNOME" ]; then _INSTALL_GNOME=true; else unset _INSTALL_GNOME; fi;;
+        k) if [ -z "$_INSTALL_KDE" ]; then _INSTALL_KDE=true; else unset _INSTALL_KDE; fi;;
+        f) if [ -z "$_INSTALL_FIREFOX" ]; then _INSTALL_FIREFOX=true; else unset _INSTALL_FIREFOX; fi;;
+        c) if [ -z "$_INSTALL_CHROME" ]; then _INSTALL_CHROME=true; else unset _INSTALL_CHROME; fi;;
+        h) if [ -z "$_INSTALL_CHROMIUM" ]; then _INSTALL_CHROMIUM=true; else unset _INSTALL_CHROMIUM; fi;;
+        a) if [ -z "$_INSTALL_BRAVE" ]; then _INSTALL_BRAVE=true; else unset _INSTALL_BRAVE; fi;;
+        v) if [ -z "$_INSTALL_VSCODIUM" ]; then _INSTALL_VSCODIUM=true; else unset _INSTALL_VSCODIUM; fi;;
+        d) break;;
+        e) exit 0;;
+    esac
+}
+
+while true; do
+    clear
+    current_config
+    prompt
+done
+
+if [ -n "$_INSTALL_NVIDIA" ]; then
+	TO_INSTALL="$TO_INSTALL nvidia"
+fi
+
+if [ -n "$_INSTALL_INTEL" ]; then
+	TO_INSTALL="$TO_INSTALL intel-media-driver"
+fi
+
+if [ -n "$_INSTALL_GNOME" ]; then
+	TO_INSTALL="$TO_INSTALL gnome gnome-tweaks tilix python-nautilus"
+fi
+
+if [ -n "$_INSTALL_KDE" ]; then
+	TO_INSTALL="$TO_INSTALL plasma plasma-wayland-session kde-applications"
+fi
+
+if [ -n "$_INSTALL_FIREFOX" ]; then
+	TO_INSTALL="$TO_INSTALL firefox"
+fi
+
+if [ -n "$_INSTALL_CHROME" ]; then
+	TO_INSTALL_AUR="$TO_INSTALL_AUR google-chrome"
+fi
+
+if [ -n "$_INSTALL_CHROMIUM" ]; then
+	TO_INSTALL_AUR="$TO_INSTALL_AUR chromium-vaapi-bin chromium-widevine"
+fi
+
+if [ -n "$_INSTALL_BRAVE" ]; then
+	TO_INSTALL_AUR="$TO_INSTALL_AUR brave-bin"
+fi
+
+if [ -n "$_INSTALL_VSCODIUM" ]; then
+	TO_INSTALL_AUR="$TO_INSTALL_AUR vscodium-bin"
+fi
+
+# PRE-INSTALLATION
+# ================
+
+# update the system clock
+timedatectl set-ntp true
+
+# format the partitions
+mkfs.vfat -F 32 $EFI_PARTITION
+mkfs.ext4 -F $BOOT_PARTITION
+mkfs.f2fs -f $ROOT_PARTITION
+mkswap -f $SWAP_PARTITION
+swapon $SWAP_PARTITION
+
+# mount the file systems
+mount $ROOT_PARTITION /mnt
+mkdir /mnt/boot
+mount $BOOT_PARTITION /mnt/boot
+mkdir /mnt/efi
+mount $EFI_PARTITION /mnt/efi
+
+# INSTALLATION
+# ============
+
+# install the packages
+pacstrap /mnt "$_TO_INSTALL"
+
+# CONFIGURE THE SYSTEM
+# ====================
+
+# generate the fstab file
+genfstab -U /mnt >> /mnt/etc/fstab
+
+# write the second part to be executed inside the chroot
+cat > /mnt/part2.sh <<EOF
+#!/usr/bin/env bash
+
+aur-install() {
+	su - "$_USER_NAME" -c " \
+		while [ -n "$1" ]; do
+			if [ "$1" == "chromium-vaapi-bin" ]; then
+				gpg --recv-keys EB4F9E5A60D32232BB52150C12C87A28FEAC6B20
+			fi
+			cd ~ && \
+			git clone "https://aur.archlinux.org/\$1.git" && \
+			cd "\$1" && \
+			makepkg -sirc --noconfirm && \
+			cd ~ && \
+			rm -rf "\$1"
+			shift
+		done
+	"
+}
+
+# set the time zone
+ln -sf "/usr/share/zoneinfo/$_LOCALTIME" /etc/localtime
+
+# run hwclock to generate /etc/adjtime
+hwclock --systohc
+
+# uncomment $_LANGUAGE.UTF-8 UTF-8 in /etc/locale.gen
+sed -i "s/#$_LANGUAGE.UTF-8 UTF-8/$_LANGUAGE.UTF-8 UTF-8/g" /etc/locale.gen
+
+# generate the locale
+locale-gen
+
+# set the LANG variable in locale.conf
+echo "LANG=$_LANGUAGE.UTF-8" > /etc/locale.conf
+
+# create the hostname file
+echo "$_HOSTNAME" > /etc/hostname
+
+# add matching entries to /etc/hosts
+cat <<EOSF >> /etc/hosts
+127.0.0.1 localhost
+::1 localhost
+127.0.1.1 $_HOSTNAME.localdomain $_HOSTNAME
+EOSF
+
+# set the root password
+echo "root:$_PASSWORD" | chpasswd
+
+
+# MY STUFF
+# ========
+
+# create the user
+useradd -m -s /usr/bin/zsh -G wheel "$_USER_NAME"
+
+# set the user password
+echo "$_USER_NAME:$_PASSWORD" | chpasswd
+
+# add the wheel group (without password) to the sudoers file
+echo "%wheel ALL=(ALL) NOPASSWD: ALL" | EDITOR='tee -a' visudo
+
+# enable user namespaces
+echo "kernel.unprivileged_userns_clone = 1" > /etc/sysctl.d/00-local-userns.conf
+
+# install aur packages
+aur-install "$_TO_INSTALL_AUR"
+
+# add my dotfiles
+su - "$_USER_NAME" -c " \
+	git clone https://github.com/mquarneti/dotfiles.git ~/.dotfiles && \
+	chmod +x ~/.dotfiles/install.sh && \
+	~/.dotfiles/install.sh \
+"
+
+# enable display manager service
+if [ -n "$_INSTALL_GNOME" ]; then
+    systemctl enable gdm.service
+elif [ -n "$_INSTALL_KDE" ]; then
+    systemctl enable sddm.service;;
+fi
+
+# enable networkmanager and bluetooth services
+systemctl enable NetworkManager.service
+systemctl enable bluetooth.service
+
+# install and configure grub
+grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg
+
+# leave the chroot
+exit
+EOF
+
+# make part2.sh executable
+chmod +x /mnt/part2.sh
+
+# execute part2.sh as chroot
+arch-chroot /mnt /part2.sh
+
+# remove part2.sh
+rm /mnt/part2.sh
+
+# umount all the partitions
+umount -R /mnt
+
+echo "installation complete"
