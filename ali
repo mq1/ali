@@ -220,7 +220,7 @@ echo "LANG=$_LANGUAGE.UTF-8" > /etc/locale.conf
 echo "$_HOSTNAME" > /etc/hostname
 
 # add matching entries to /etc/hosts
-cat <<EOSF >> /etc/hosts
+cat >> /etc/hosts <<EOSF
 127.0.0.1 localhost
 ::1 localhost
 127.0.1.1 $_HOSTNAME.localdomain $_HOSTNAME
