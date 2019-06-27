@@ -77,11 +77,12 @@ Installing
 
 [d]one
 e[x]it
+
+
 EOF
 }
 
 prompt() {
-    echo -e "\n"
     read -p "Action => " action
     case "$action" in
         e) read -p "EFI partition => " _EFI_PARTITION;;
