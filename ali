@@ -40,6 +40,20 @@ efibootmgr \
 
 _TO_INSTALL_AUR="yay-bin"
 
+_INSTALL_NVIDIA=false
+_INSTALL_INTEL=false
+_INSTALL_GNOME=false
+_INSTALL_KDE=false
+_INSTALL_FIREFOX=false
+_INSTALL_CHROME=false
+_INSTALL_CHROMIUM=false
+_INSTALL_BRAVE=false
+_INSTALL_VSCODIUM=false
+
+is_installing() {
+    $1 && echo "*" || echo " "
+}
+
 current_config() {
     cat <<EOF
 Current config
@@ -57,15 +71,15 @@ Current config
 [p]assword      => $_PASSWORD
 
 Installing
-[${_INSTALL_NVIDIA:-" "}] [n]vidia
-[${_INSTALL_INTEL:-" "}] [i]ntel-media-driver
-[${_INSTALL_GNOME:-" "}] [g]nome
-[${_INSTALL_KDE:-" "}] [k]de
-[${_INSTALL_FIREFOX:-" "}] [f]irefox
-[${_INSTALL_CHROME:-" "}] [c]hrome
-[${_INSTALL_CHROMIUM:-" "}] c[h]romium
-[${_INSTALL_BRAVE:-" "}] br[a]ve
-[${_INSTALL_VSCODIUM:-" "}] [v]scodium
+[$(is_installing $_INSTALL_NVIDIA)] [n]vidia
+[$(is_installing $_INSTALL_INTEL)] [i]ntel-media-driver
+[$(is_installing $_INSTALL_GNOME)] [g]nome
+[$(is_installing $_INSTALL_KDE)] [k]de
+[$(is_installing $_INSTALL_FIREFOX)] [f]irefox
+[$(is_installing $_INSTALL_CHROME)] [c]hrome
+[$(is_installing $_INSTALL_CHROMIUM)] c[h]romium
+[$(is_installing $_INSTALL_BRAVE)] br[a]ve
+[$(is_installing $_INSTALL_VSCODIUM)] [v]scodium
 
 [d]one
 e[x]it
@@ -86,14 +100,14 @@ prompt() {
         h) read -p "Hostname => " _HOSTNAME;;
         u) read -p "User name => " _USER_NAME;;
         p) read -p "Password => " _PASSWORD;;
-        n) [ -z "$_INSTALL_NVIDIA" ] && _INSTALL_NVIDIA="*" || unset _INSTALL_NVIDIA;;
-        g) [ -z "$_INSTALL_GNOME" ] && _INSTALL_GNOME="*" && unset _INSTALL_KDE || unset _INSTALL_GNOME;;
-        k) [ -z "$_INSTALL_KDE" ] && _INSTALL_KDE="*" && unset _INSTALL_GNOME || unset _INSTALL_KDE;;
-        f) [ -z "$_INSTALL_FIREFOX" ] && _INSTALL_FIREFOX="*" || unset _INSTALL_FIREFOX;;
-        c) [ -z "$_INSTALL_CHROME" ] && _INSTALL_CHROME="*" || unset _INSTALL_CHROME;;
-        h) [ -z "$_INSTALL_CHROMIUM" ] && _INSTALL_CHROMIUM="*" || unset _INSTALL_CHROMIUM;;
-        a) [ -z "$_INSTALL_BRAVE" ] && _INSTALL_BRAVE="*" || unset _INSTALL_BRAVE;;
-        v) [ -z "$_INSTALL_VSCODIUM" ] && _INSTALL_VSCODIUM="*" || unset _INSTALL_VSCODIUM;;
+        n) $_INSTALL_NVIDIA && _INSTALL_NVIDIA=false || _INSTALL_NVIDIA=true;;
+        g) $_INSTALL_GNOME && _INSTALL_GNOME=false || _INSTALL_GNOME=true && _INSTALL_KDE=false ;;
+        k) $_INSTALL_KDE && _INSTALL_KDE=false || _INSTALL_KDE=true && _INSTALL_GNOME=false ;;
+        f) $_INSTALL_FIREFOX && _INSTALL_FIREFOX=false || _INSTALL_FIREFOX=true;;
+        c) $_INSTALL_CHROME && _INSTALL_CHROME=false || _INSTALL_CHROME=true;;
+        h) $_INSTALL_CHROMIUM && _INSTALL_CHROMIUM=false || _INSTALL_CHROMIUM=true;;
+        a) $_INSTALL_BRAVE && _INSTALL_BRAVE=false || _INSTALL_BRAVE=true;;
+        v) $_INSTALL_VSCODIUM && _INSTALL_VSCODIUM=false || _INSTALL_VSCODIUM=true;;
         d) repeat=false;;
         x) exit 0;;
     esac
@@ -105,15 +119,18 @@ while $repeat; do
     prompt
 done
 
-[ -n "$_INSTALL_NVIDIA" ] && TO_INSTALL="$TO_INSTALL nvidia"
-[ -n "$_INSTALL_INTEL" ] && TO_INSTALL="$TO_INSTALL intel-media-driver"
-[ -n "$_INSTALL_GNOME" ] && TO_INSTALL="$TO_INSTALL gnome gnome-tweaks tilix python-nautilus"
-[ -n "$_INSTALL_KDE" ] && TO_INSTALL="$TO_INSTALL plasma plasma-wayland-session kde-applications"
-[ -n "$_INSTALL_FIREFOX" ] && TO_INSTALL="$TO_INSTALL firefox"
-[ -n "$_INSTALL_CHROME" ] && TO_INSTALL_AUR="$TO_INSTALL_AUR google-chrome"
-[ -n "$_INSTALL_CHROMIUM" ] && TO_INSTALL_AUR="$TO_INSTALL_AUR chromium-vaapi-bin chromium-widevine"
-[ -n "$_INSTALL_BRAVE" ] && TO_INSTALL_AUR="$TO_INSTALL_AUR brave-bin"
-[ -n "$_INSTALL_VSCODIUM" ] && TO_INSTALL_AUR="$TO_INSTALL_AUR vscodium-bin"
+echo ok
+exit 0
+
+$_INSTALL_NVIDIA && TO_INSTALL="$TO_INSTALL nvidia"
+$_INSTALL_INTEL && TO_INSTALL="$TO_INSTALL intel-media-driver"
+$_INSTALL_GNOME && TO_INSTALL="$TO_INSTALL gnome gnome-tweaks tilix python-nautilus"
+$_INSTALL_KDE && TO_INSTALL="$TO_INSTALL plasma plasma-wayland-session kde-applications"
+$_INSTALL_FIREFOX && TO_INSTALL="$TO_INSTALL firefox"
+$_INSTALL_CHROME && TO_INSTALL_AUR="$TO_INSTALL_AUR google-chrome"
+$_INSTALL_CHROMIUM && TO_INSTALL_AUR="$TO_INSTALL_AUR chromium-vaapi-bin chromium-widevine"
+$_INSTALL_BRAVE && TO_INSTALL_AUR="$TO_INSTALL_AUR brave-bin"
+$_INSTALL_VSCODIUM && TO_INSTALL_AUR="$TO_INSTALL_AUR vscodium-bin"
 
 # PRE-INSTALLATION
 # ================
@@ -222,11 +239,8 @@ su - "$_USER_NAME" -c " \
 "
 
 # enable display manager service
-if [ -n "$_INSTALL_GNOME" ]; then
-    systemctl enable gdm.service
-elif [ -n "$_INSTALL_KDE" ]; then
-    systemctl enable sddm.service;;
-fi
+$_INSTALL_GNOME && systemctl enable gdm.service
+$_INSTALL_KDE && systemctl enable sddm.service;;
 
 # enable networkmanager and bluetooth services
 systemctl enable NetworkManager.service
