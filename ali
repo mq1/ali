@@ -187,17 +187,16 @@ cat > /mnt/part2.sh <<EOF
 
 aur-install() {
 	su - "$_USER_NAME" -c " \
-		while [ -n "$1" ]; do
-			if [ "$1" == "chromium-vaapi-bin" ]; then
+		for package in "\$@"; do
+			if [ "\$package" == "chromium-vaapi-bin" ]; then
 				gpg --recv-keys EB4F9E5A60D32232BB52150C12C87A28FEAC6B20
 			fi
 			cd ~ && \
-			git clone "https://aur.archlinux.org/\$1.git" && \
-			cd "\$1" && \
+			git clone "https://aur.archlinux.org/\$package.git" && \
+			cd "\$package" && \
 			makepkg -sirc --noconfirm && \
 			cd ~ && \
-			rm -rf "\$1"
-			shift
+			rm -rf "\$package"
 		done
 	"
 }
