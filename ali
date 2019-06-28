@@ -41,10 +41,10 @@ efibootmgr \
 _TO_INSTALL_AUR="yay-bin"
 
 is_not_null() {
-    if [ -z "$1" ]; then
-        echo " "
-    else
+    if [ -n "$1" ]; then
         echo "*"
+    else
+        echo " "
     fi
 }
 
@@ -103,7 +103,7 @@ prompt() {
         a) if [ -z "$_INSTALL_BRAVE" ]; then _INSTALL_BRAVE=true; else unset _INSTALL_BRAVE; fi;;
         v) if [ -z "$_INSTALL_VSCODIUM" ]; then _INSTALL_VSCODIUM=true; else unset _INSTALL_VSCODIUM; fi;;
         d) break;;
-        e) exit 0;;
+        x) exit 0;;
     esac
 }
 
