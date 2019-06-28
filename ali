@@ -94,12 +94,12 @@ prompt() {
         h) [ -z "$_INSTALL_CHROMIUM" ] && _INSTALL_CHROMIUM="*" || unset _INSTALL_CHROMIUM;;
         a) [ -z "$_INSTALL_BRAVE" ] && _INSTALL_BRAVE="*" || unset _INSTALL_BRAVE;;
         v) [ -z "$_INSTALL_VSCODIUM" ] && _INSTALL_VSCODIUM="*" || unset _INSTALL_VSCODIUM;;
-        d) break;;
+        d) repeat=false;;
         x) exit 0;;
     esac
 }
 
-while true; do
+while $repeat; do
     clear
     current_config
     prompt
