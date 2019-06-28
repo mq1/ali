@@ -83,7 +83,7 @@ EOF
 }
 
 prompt() {
-    read -p "Action => " action
+    read -p "> " action
     case "$action" in
         e) read -p "EFI partition => " _EFI_PARTITION;;
         b) read -p "Boot partition => " _BOOT_PARTITION;;
