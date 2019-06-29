@@ -50,7 +50,7 @@ Current config
 ==============
 
 [e]fi           => $_EFI_PARTITION
-[b]oot          => $_BOOT_PARTITION 
+[b]oot          => $_BOOT_PARTITION
 [s]wap          => $_SWAP_PARTITION
 [r]oot          => $_ROOT_PARTITION
 
@@ -156,19 +156,19 @@ cat > /mnt/part2.sh <<EOF
 #!/usr/bin/env bash
 
 aur-install() {
-	su - "$_USER_NAME" -c " \
-		for package in "\$@"; do
-			if [ "\$package" == "chromium-vaapi-bin" ]; then
-				gpg --recv-keys EB4F9E5A60D32232BB52150C12C87A28FEAC6B20
-			fi
-			cd ~ && \
-			git clone "https://aur.archlinux.org/\$package.git" && \
-			cd "\$package" && \
-			makepkg -sirc --noconfirm && \
-			cd ~ && \
-			rm -rf "\$package"
-		done
-	"
+    su - "$_USER_NAME" -c " \
+        for package in "\$@"; do
+            if [ "\$package" == "chromium-vaapi-bin" ]; then
+                gpg --recv-keys EB4F9E5A60D32232BB52150C12C87A28FEAC6B20
+            fi
+            cd ~ && \
+            git clone "https://aur.archlinux.org/\$package.git" && \
+            cd "\$package" && \
+            makepkg -sirc --noconfirm && \
+            cd ~ && \
+            rm -rf "\$package"
+        done
+    "
 }
 
 # set the time zone
@@ -220,9 +220,9 @@ aur-install "$_TO_INSTALL_AUR"
 
 # add my dotfiles
 su - "$_USER_NAME" -c " \
-	git clone https://github.com/mquarneti/dotfiles.git ~/.dotfiles && \
-	chmod +x ~/.dotfiles/install.sh && \
-	~/.dotfiles/install.sh \
+    git clone https://github.com/mquarneti/dotfiles.git ~/.dotfiles && \
+    chmod +x ~/.dotfiles/install.sh && \
+    ~/.dotfiles/install.sh \
 "
 
 # enable display manager service
