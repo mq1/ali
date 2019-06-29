@@ -158,7 +158,7 @@ cat > /mnt/part2.sh <<EOF
 aur-install() {
     su - "$_USER_NAME" -c " \
         for package in "\$@"; do
-            if [ "\$package" == "chromium-vaapi-bin" ]; then
+            if [ "\$package" = "chromium-vaapi-bin" ]; then
                 gpg --recv-keys EB4F9E5A60D32232BB52150C12C87A28FEAC6B20
             fi
             cd ~ && \
@@ -226,8 +226,8 @@ su - "$_USER_NAME" -c " \
 "
 
 # enable display manager service
-$_INSTALL_GNOME && systemctl enable gdm.service
-$_INSTALL_KDE && systemctl enable sddm.service;;
+[ "$_INSTALL_GNOME" = true ] && systemctl enable gdm.service
+[ "$_INSTALL_KDE" = true ] && systemctl enable sddm.service;;
 
 # enable networkmanager and bluetooth services
 systemctl enable NetworkManager.service
