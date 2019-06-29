@@ -40,18 +40,8 @@ efibootmgr \
 
 _TO_INSTALL_AUR="yay-bin"
 
-_INSTALL_NVIDIA=false
-_INSTALL_INTEL=false
-_INSTALL_GNOME=false
-_INSTALL_KDE=false
-_INSTALL_FIREFOX=false
-_INSTALL_CHROME=false
-_INSTALL_CHROMIUM=false
-_INSTALL_BRAVE=false
-_INSTALL_VSCODIUM=false
-
 is_installing() {
-    $1 && echo "*" || echo " "
+    [ "$1" = true ] && echo "*" || echo " "
 }
 
 current_config() {
@@ -100,14 +90,14 @@ prompt() {
         h) read -p "Hostname => " _HOSTNAME;;
         u) read -p "User name => " _USER_NAME;;
         p) read -p "Password => " _PASSWORD;;
-        n) $_INSTALL_NVIDIA && _INSTALL_NVIDIA=false || _INSTALL_NVIDIA=true;;
-        g) $_INSTALL_GNOME && _INSTALL_GNOME=false || _INSTALL_GNOME=true && _INSTALL_KDE=false ;;
-        k) $_INSTALL_KDE && _INSTALL_KDE=false || _INSTALL_KDE=true && _INSTALL_GNOME=false ;;
-        f) $_INSTALL_FIREFOX && _INSTALL_FIREFOX=false || _INSTALL_FIREFOX=true;;
-        c) $_INSTALL_CHROME && _INSTALL_CHROME=false || _INSTALL_CHROME=true;;
-        h) $_INSTALL_CHROMIUM && _INSTALL_CHROMIUM=false || _INSTALL_CHROMIUM=true;;
-        a) $_INSTALL_BRAVE && _INSTALL_BRAVE=false || _INSTALL_BRAVE=true;;
-        v) $_INSTALL_VSCODIUM && _INSTALL_VSCODIUM=false || _INSTALL_VSCODIUM=true;;
+        n) [ "$_INSTALL_NVIDIA" = true ] && _INSTALL_NVIDIA=false || _INSTALL_NVIDIA=true;;
+        g) [ "$_INSTALL_GNOME" = true ] && _INSTALL_GNOME=false || _INSTALL_GNOME=true && _INSTALL_KDE=false ;;
+        k) [ "$_INSTALL_KDE" = true ] && _INSTALL_KDE=false || _INSTALL_KDE=true && _INSTALL_GNOME=false ;;
+        f) [ "$_INSTALL_FIREFOX" = true ] && _INSTALL_FIREFOX=false || _INSTALL_FIREFOX=true;;
+        c) [ "$_INSTALL_CHROME" = true ] && _INSTALL_CHROME=false || _INSTALL_CHROME=true;;
+        h) [ "$_INSTALL_CHROMIUM" = true ] && _INSTALL_CHROMIUM=false || _INSTALL_CHROMIUM=true;;
+        a) [ "$_INSTALL_BRAVE" = true ] && _INSTALL_BRAVE=false || _INSTALL_BRAVE=true;;
+        v) [ "$_INSTALL_VSCODIUM" = true ] && _INSTALL_VSCODIUM=false || _INSTALL_VSCODIUM=true;;
         d) repeat=false;;
         x) exit 0;;
     esac
@@ -119,18 +109,15 @@ while $repeat; do
     prompt
 done
 
-echo ok
-exit 0
-
-$_INSTALL_NVIDIA && TO_INSTALL="$TO_INSTALL nvidia"
-$_INSTALL_INTEL && TO_INSTALL="$TO_INSTALL intel-media-driver"
-$_INSTALL_GNOME && TO_INSTALL="$TO_INSTALL gnome gnome-tweaks tilix python-nautilus"
-$_INSTALL_KDE && TO_INSTALL="$TO_INSTALL plasma plasma-wayland-session kde-applications"
-$_INSTALL_FIREFOX && TO_INSTALL="$TO_INSTALL firefox"
-$_INSTALL_CHROME && TO_INSTALL_AUR="$TO_INSTALL_AUR google-chrome"
-$_INSTALL_CHROMIUM && TO_INSTALL_AUR="$TO_INSTALL_AUR chromium-vaapi-bin chromium-widevine"
-$_INSTALL_BRAVE && TO_INSTALL_AUR="$TO_INSTALL_AUR brave-bin"
-$_INSTALL_VSCODIUM && TO_INSTALL_AUR="$TO_INSTALL_AUR vscodium-bin"
+[ "$_INSTALL_NVIDIA" = true ] && TO_INSTALL="$TO_INSTALL nvidia"
+[ "$_INSTALL_INTEL" = true ] && TO_INSTALL="$TO_INSTALL intel-media-driver"
+[ "$_INSTALL_GNOME" = true ] && TO_INSTALL="$TO_INSTALL gnome gnome-tweaks tilix python-nautilus"
+[ "$_INSTALL_KDE" = true ] && TO_INSTALL="$TO_INSTALL plasma plasma-wayland-session kde-applications"
+[ "$_INSTALL_FIREFOX" = true ] && TO_INSTALL="$TO_INSTALL firefox"
+[ "$_INSTALL_CHROME" = true ] && TO_INSTALL_AUR="$TO_INSTALL_AUR google-chrome"
+[ "$_INSTALL_CHROMIUM" = true ] && TO_INSTALL_AUR="$TO_INSTALL_AUR chromium-vaapi-bin chromium-widevine"
+[ "$_INSTALL_BRAVE" = true ] && TO_INSTALL_AUR="$TO_INSTALL_AUR brave-bin"
+[ "$_INSTALL_VSCODIUM" = true ] && TO_INSTALL_AUR="$TO_INSTALL_AUR vscodium-bin"
 
 # PRE-INSTALLATION
 # ================
