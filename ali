@@ -109,15 +109,15 @@ while $repeat; do
     prompt
 done
 
-[ "$_INSTALL_NVIDIA" = true ] && TO_INSTALL="$TO_INSTALL nvidia"
-[ "$_INSTALL_INTEL" = true ] && TO_INSTALL="$TO_INSTALL intel-media-driver"
-[ "$_INSTALL_GNOME" = true ] && TO_INSTALL="$TO_INSTALL gnome gnome-tweaks tilix python-nautilus"
-[ "$_INSTALL_KDE" = true ] && TO_INSTALL="$TO_INSTALL plasma plasma-wayland-session kde-applications"
-[ "$_INSTALL_FIREFOX" = true ] && TO_INSTALL="$TO_INSTALL firefox"
-[ "$_INSTALL_CHROME" = true ] && TO_INSTALL_AUR="$TO_INSTALL_AUR google-chrome"
-[ "$_INSTALL_CHROMIUM" = true ] && TO_INSTALL_AUR="$TO_INSTALL_AUR chromium-vaapi-bin chromium-widevine"
-[ "$_INSTALL_BRAVE" = true ] && TO_INSTALL_AUR="$TO_INSTALL_AUR brave-bin"
-[ "$_INSTALL_VSCODIUM" = true ] && TO_INSTALL_AUR="$TO_INSTALL_AUR vscodium-bin"
+[ "$_INSTALL_NVIDIA" = true ] && TO_INSTALL="$_TO_INSTALL nvidia"
+[ "$_INSTALL_INTEL" = true ] && TO_INSTALL="$_TO_INSTALL intel-media-driver"
+[ "$_INSTALL_GNOME" = true ] && TO_INSTALL="$_TO_INSTALL gnome gnome-tweaks tilix python-nautilus"
+[ "$_INSTALL_KDE" = true ] && TO_INSTALL="$_TO_INSTALL plasma plasma-wayland-session kde-applications"
+[ "$_INSTALL_FIREFOX" = true ] && TO_INSTALL="$_TO_INSTALL firefox"
+[ "$_INSTALL_CHROME" = true ] && TO_INSTALL_AUR="$_TO_INSTALL_AUR google-chrome"
+[ "$_INSTALL_CHROMIUM" = true ] && TO_INSTALL_AUR="$_TO_INSTALL_AUR chromium-vaapi-bin chromium-widevine"
+[ "$_INSTALL_BRAVE" = true ] && TO_INSTALL_AUR="$_TO_INSTALL_AUR brave-bin"
+[ "$_INSTALL_VSCODIUM" = true ] && TO_INSTALL_AUR="$_TO_INSTALL_AUR vscodium-bin"
 
 # PRE-INSTALLATION
 # ================
@@ -126,18 +126,18 @@ done
 timedatectl set-ntp true
 
 # format the partitions
-mkfs.vfat -F 32 $EFI_PARTITION
-mkfs.ext4 -F $BOOT_PARTITION
-mkfs.f2fs -f $ROOT_PARTITION
-mkswap -f $SWAP_PARTITION
-swapon $SWAP_PARTITION
+mkfs.vfat -F 32 "$_EFI_PARTITION"
+mkfs.ext4 -F "$_BOOT_PARTITION"
+mkfs.f2fs -f "$_ROOT_PARTITION"
+mkswap -f "$_SWAP_PARTITION"
+swapon "$_SWAP_PARTITION"
 
 # mount the file systems
-mount $ROOT_PARTITION /mnt
+mount "$_ROOT_PARTITION" /mnt
 mkdir /mnt/boot
-mount $BOOT_PARTITION /mnt/boot
+mount "$_BOOT_PARTITION" /mnt/boot
 mkdir /mnt/efi
-mount $EFI_PARTITION /mnt/efi
+mount "$_EFI_PARTITION" /mnt/efi
 
 # INSTALLATION
 # ============
