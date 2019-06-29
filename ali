@@ -12,6 +12,9 @@
 # /dev/sda6    Linux Swap                        8GiB
 # /dev/sda7    Linux Root                        Remaining space
 
+# DEFAULTS
+# ========
+
 _TO_INSTALL=" \
 base \
 base-devel \
@@ -38,6 +41,18 @@ efibootmgr \
 "
 
 _TO_INSTALL_AUR="yay-bin"
+
+_EFI_PARTITION=/dev/sda5
+_BOOT_PARTITION=/dev/sda6
+_SWAP_PARTITION=/dev/sda7
+_ROOT_PARTITION=/dev/sda8
+_TIME_ZONE=Europe/Rome
+_LOCALE=en_US
+_HOSTNAME=mq-desktop
+_USER_NAME=manuel
+_INSTALL_NVIDIA=true
+_INSTALL_GNOME=true
+_INSTALL_FIREFOX=true
 
 is_installing() {
     [ "$1" = true ] && echo "*" || echo " "
