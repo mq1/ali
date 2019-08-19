@@ -172,9 +172,7 @@ cat > /mnt/part2.sh <<EOF
 aur-install() {
     su - "$user_name" -c " \
         for package in "\$@"; do
-            if [ "\$package" = "chromium-vaapi-bin" ]; then
-                gpg --recv-keys EB4F9E5A60D32232BB52150C12C87A28FEAC6B20
-            fi
+            [ "\$package" = "chromium-vaapi-bin" ] && gpg --recv-keys EB4F9E5A60D32232BB52150C12C87A28FEAC6B20
             cd ~ && \
             git clone "https://aur.archlinux.org/\$package.git" && \
             cd "\$package" && \
