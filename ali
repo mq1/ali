@@ -51,11 +51,17 @@ locale=en_US
 hostname=mq-desktop
 user_name=manuel
 install_nvidia=true
+install_intel=false
 install_gnome=true
+install_kde=false
 install_firefox=true
+install_chrome=false
+install_chromium=false
+install_brave=false
+install_vscodium=false
 
 is_installing() {
-    [ "$1" = true ] && echo "*" || echo " "
+    $1 && echo "*" || echo " "
 }
 
 current_config() {
@@ -104,14 +110,14 @@ prompt() {
         h) read -p "Hostname => " hostname;;
         u) read -p "User name => " user_name;;
         p) read -p "Password => " password;;
-        n) [ "$install_nvidia" = true ] && install_nvidia=false || install_nvidia=true;;
-        g) [ "$install_gnome" = true ] && install_gnome=false || install_gnome=true && install_kde=false;;
-        k) [ "$install_kde" = true ] && install_kde=false || install_kde=true && install_gnome=false;;
-        f) [ "$install_firefox" = true ] && install_firefox=false || install_firefox=true;;
-        c) [ "$install_chrome" = true ] && install_chrome=false || install_chrome=true;;
-        h) [ "$install_chromium" = true ] && install_chromium=false || install_chromium=true;;
-        a) [ "$install_brave" = true ] && install_brave=false || install_brave=true;;
-        v) [ "$install_vscodium" = true ] && install_vscodium=false || install_vscodium=true;;
+        n) $install_nvidia && install_nvidia=false || install_nvidia=true;;
+        g) $install_gnome && install_gnome=false || install_gnome=true && install_kde=false;;
+        k) $install_kde && install_kde=false || install_kde=true && install_gnome=false;;
+        f) $install_firefox && install_firefox=false || install_firefox=true;;
+        c) $install_chrome && install_chrome=false || install_chrome=true;;
+        h) $install_chromium && install_chromium=false || install_chromium=true;;
+        a) $install_brave && install_brave=false || install_brave=true;;
+        v) $install_vscodium && install_vscodium=false || install_vscodium=true;;
         d) repeat=false;;
         x) exit 0;;
     esac
@@ -123,15 +129,15 @@ while $repeat; do
     prompt
 done
 
-[ "$install_nvidia" = true ] && to_install="$to_install nvidia"
-[ "$install_intel" = true ] && to_install="$to_install intel-media-driver"
-[ "$install_gnome" = true ] && to_install="$to_install gnome gnome-tweaks tilix python-nautilus"
-[ "$install_kde" = true ] && to_install="$to_install plasma plasma-wayland-session kde-applications"
-[ "$install_firefox" = true ] && to_install="$to_install firefox"
-[ "$install_chrome" = true ] && to_install_aur="$to_install_aur google-chrome"
-[ "$install_chromium" = true ] && to_install_aur="$to_install_aur chromium-vaapi-bin chromium-widevine"
-[ "$install_brave" = true ] && to_install_aur="$to_install_aur brave-bin"
-[ "$install_vscodium" = true ] && to_install_aur="$to_install_aur vscodium-bin"
+$install_nvidia && to_install="$to_install nvidia"
+$install_intel && to_install="$to_install intel-media-driver"
+$install_gnome && to_install="$to_install gnome gnome-tweaks tilix python-nautilus"
+$install_kde && to_install="$to_install plasma plasma-wayland-session kde-applications"
+$install_firefox && to_install="$to_install firefox"
+$install_chrome && to_install_aur="$to_install_aur google-chrome"
+$install_chromium && to_install_aur="$to_install_aur chromium-vaapi-bin chromium-widevine"
+$install_brave && to_install_aur="$to_install_aur brave-bin"
+$install_vscodium && to_install_aur="$to_install_aur vscodium-bin"
 
 # PRE-INSTALLATION
 # ================
@@ -238,8 +244,8 @@ su - "$user_name" -c " \
 "
 
 # enable display manager service
-[ "$install_gnome" = true ] && systemctl enable gdm.service
-[ "$install_kde" = true ] && systemctl enable sddm.service
+$install_gnome && systemctl enable gdm.service
+$install_kde && systemctl enable sddm.service
 
 # enable networkmanager and bluetooth services
 systemctl enable NetworkManager.service
