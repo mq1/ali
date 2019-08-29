@@ -24,10 +24,6 @@ networkmanager \
 openssh \
 git \
 zsh \
-bat \
-lsd \
-neovim \
-xclip \
 flatpak \
 noto-fonts \
 noto-fonts-cjk \
