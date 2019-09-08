@@ -210,12 +210,12 @@ cat >> /etc/hosts <<EOSF
 127.0.1.1 $hostname.localdomain $hostname
 EOSF
 
-# set the root password
-echo "root:$password" | chpasswd
-
 
 # MY STUFF
 # ========
+
+# disable the root user
+passwd -l root
 
 # create the user
 useradd -m -s /usr/bin/zsh -G wheel "$user_name"
