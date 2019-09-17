@@ -7,8 +7,7 @@
 # /dev/sda2    Windows ESP                       100MiB
 # /dev/sda3    Microsoft Reserved Partition      16MiB
 # /dev/sda4    Microsoft basic data partition    Arbitrary
-# /dev/sda5    Linux ESP                         50MiB
-# /dev/sda6    Linux Boot                        200MiB
+# /dev/sda5    Linux Boot                        260MiB
 # /dev/sda6    Linux Swap                        8GiB
 # /dev/sda7    Linux Root                        Remaining space
 
@@ -44,8 +43,8 @@ swap_partition=/dev/sda7
 root_partition=/dev/sda8
 time_zone=Europe/Rome
 locale=en_US
-hostname=mq-desktop
-user_name=manuel
+hostname=quarnobox
+user_name=quarno
 install_nvidia=true
 install_intel=false
 install_gnome=true
@@ -142,18 +141,15 @@ $install_vscodium && to_install_aur="$to_install_aur vscodium-bin"
 timedatectl set-ntp true
 
 # format the partitions
-mkfs.vfat -F 32 "$efi_partition"
-mkfs.ext4 -F "$boot_partition"
+mkfs.vfat -F 32 "$boot_partition"
 mkfs.f2fs -f "$root_partition"
 mkswap -f "$swap_partition"
-swapon "$swap_partition"
 
 # mount the file systems
 mount "$root_partition" /mnt
 mkdir /mnt/boot
 mount "$boot_partition" /mnt/boot
-mkdir /mnt/efi
-mount "$efi_partition" /mnt/efi
+swapon "$swap_partition"
 
 # INSTALLATION
 # ============
@@ -248,7 +244,7 @@ systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
 
 # install and configure grub
-grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
 
 # leave the chroot
