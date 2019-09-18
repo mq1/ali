@@ -104,6 +104,7 @@ prompt() {
         u) read -p "User name => " user_name;;
         p) read -p "Password => " password;;
         n) $install_nvidia && install_nvidia=false || install_nvidia=true;;
+        i) $install_intel && install_intel=false || install_intel=true;;
         g) $install_gnome && install_gnome=false || install_gnome=true && install_kde=false;;
         k) $install_kde && install_kde=false || install_kde=true && install_gnome=false;;
         f) $install_firefox && install_firefox=false || install_firefox=true;;
