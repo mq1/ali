@@ -64,7 +64,6 @@ current_config() {
 Current config
 ==============
 
-[e]fi           => $efi_partition
 [b]oot          => $boot_partition
 [s]wap          => $swap_partition
 [r]oot          => $root_partition
@@ -96,7 +95,6 @@ EOF
 prompt() {
     read -p "> " action
     case "$action" in
-        e) read -p "EFI partition => " efi_partition;;
         b) read -p "Boot partition => " boot_partition;;
         s) read -p "Swap partition => " swap_partition;;
         r) read -p "Root partition => " root_partition;;
