@@ -5,5 +5,5 @@ This script is intended to work on my devices (desktop and laptop), feel free to
 ## Usage
 
 ```sh
-curl -sSL https://git.io/fj6V8 | bash
+bash -c "$(curl -sSL https://git.io/fj6V8)"
 ```
