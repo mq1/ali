@@ -31,8 +31,6 @@ ntfs-3g \
 intel-ucode \
 "
 
-to_install_aur="yay-bin"
-
 boot_partition=/dev/sda5
 lvm_partition=/dev/sda6
 time_zone=Europe/Rome
@@ -44,9 +42,7 @@ install_intel=false
 install_gnome=true
 install_kde=false
 install_firefox=true
-install_chrome=false
 install_chromium=false
-install_brave=false
 install_code=false
 
 is_installing() {
@@ -73,10 +69,8 @@ Installing
 [$(is_installing $install_gnome)] [g]nome
 [$(is_installing $install_kde)] [k]de
 [$(is_installing $install_firefox)] [f]irefox
-[$(is_installing $install_chrome)] [c]hrome
-[$(is_installing $install_chromium)] c[h]romium
-[$(is_installing $install_brave)] b[r]ave
-[$(is_installing $install_code)] [v]scode
+[$(is_installing $install_chromium)] [c]hromium
+[$(is_installing $install_code)] [v]scode (open-source release)
 
 [d]one
 e[x]it
@@ -100,9 +94,7 @@ prompt() {
         g) $install_gnome && install_gnome=false || install_gnome=true && install_kde=false;;
         k) $install_kde && install_kde=false || install_kde=true && install_gnome=false;;
         f) $install_firefox && install_firefox=false || install_firefox=true;;
-        c) $install_chrome && install_chrome=false || install_chrome=true;;
-        h) $install_chromium && install_chromium=false || install_chromium=true;;
-        r) $install_brave && install_brave=false || install_brave=true;;
+        c) $install_chromium && install_chromium=false || install_chromium=true;;
         v) $install_code && install_code=false || install_code=true;;
         d) repeat=false;;
         x) exit 0;;
@@ -120,10 +112,8 @@ $install_intel && to_install="$to_install intel-media-driver"
 $install_gnome && to_install="$to_install gnome gnome-tweaks gnome-software-packagekit-plugin"
 $install_kde && to_install="$to_install plasma plasma-wayland-session kde-applications"
 $install_firefox && to_install="$to_install firefox"
-$install_chrome && to_install_aur="$to_install_aur google-chrome"
-$install_chromium && to_install="$to_install chromium" && to_install_aur="$to_install_aur chromium-widevine"
-$install_brave && to_install_aur="$to_install_aur brave-bin"
-$install_code && to_install_aur="$to_install code"
+$install_chromium && to_install="$to_install chromium"
+$install_code && to_install="$to_install code"
 
 # PRE-INSTALLATION
 # ================
@@ -163,19 +153,6 @@ genfstab -U /mnt >> /mnt/etc/fstab
 # write the second part to be executed inside the chroot
 cat > /mnt/part2.sh <<EOF
 #!/usr/bin/env bash
-
-aur-install() {
-    su - "$user_name" -c " \
-        for package in "\$@"; do
-            cd ~ && \
-            git clone "https://aur.archlinux.org/\$package.git" && \
-            cd "\$package" && \
-            makepkg -sirc --noconfirm && \
-            cd ~ && \
-            rm -rf "\$package"
-        done
-    "
-}
 
 # set the time zone
 ln -sf "/usr/share/zoneinfo/$time_zone" /etc/localtime
@@ -217,12 +194,6 @@ echo "$user_name:$password" | chpasswd
 
 # add the wheel group (without password) to the sudoers file
 echo "%wheel ALL=(ALL) NOPASSWD: ALL" | EDITOR='tee -a' visudo
-
-# enable user namespaces
-echo "kernel.unprivileged_userns_clone = 1" > /etc/sysctl.d/00-local-userns.conf
-
-# install aur packages
-aur-install "$to_install_aur"
 
 # add my dotfiles
 su - "$user_name" -c " \
