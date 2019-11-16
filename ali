@@ -49,7 +49,7 @@ install_firefox=true
 install_chrome=false
 install_chromium=false
 install_brave=false
-install_vscodium=false
+install_code=false
 
 is_installing() {
     $1 && echo "*" || echo " "
@@ -79,7 +79,7 @@ Installing
 [$(is_installing $install_chrome)] [c]hrome
 [$(is_installing $install_chromium)] c[h]romium
 [$(is_installing $install_brave)] br[a]ve
-[$(is_installing $install_vscodium)] [v]scodium
+[$(is_installing $install_code)] [v]scode
 
 [d]one
 e[x]it
@@ -107,7 +107,7 @@ prompt() {
         c) $install_chrome && install_chrome=false || install_chrome=true;;
         h) $install_chromium && install_chromium=false || install_chromium=true;;
         a) $install_brave && install_brave=false || install_brave=true;;
-        v) $install_vscodium && install_vscodium=false || install_vscodium=true;;
+        v) $install_code && install_code=false || install_code=true;;
         d) repeat=false;;
         x) exit 0;;
     esac
@@ -127,7 +127,7 @@ $install_firefox && to_install="$to_install firefox"
 $install_chrome && to_install_aur="$to_install_aur google-chrome"
 $install_chromium && to_install="$to_install chromium" && to_install_aur="$to_install_aur chromium-widevine"
 $install_brave && to_install_aur="$to_install_aur brave-bin"
-$install_vscodium && to_install_aur="$to_install_aur vscodium-bin"
+$install_code && to_install_aur="$to_install code"
 
 # PRE-INSTALLATION
 # ================
