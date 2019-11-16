@@ -121,7 +121,7 @@ done
 
 $install_nvidia && to_install="$to_install nvidia"
 $install_intel && to_install="$to_install intel-media-driver"
-$install_gnome && to_install="$to_install gnome gnome-tweaks"
+$install_gnome && to_install="$to_install gnome gnome-tweaks gnome-software-packagekit-plugin"
 $install_kde && to_install="$to_install plasma plasma-wayland-session kde-applications"
 $install_firefox && to_install="$to_install firefox"
 $install_chrome && to_install_aur="$to_install_aur google-chrome"
