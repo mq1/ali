@@ -33,8 +33,6 @@ mpv \
 youtube-dl \
 ntfs-3g \
 intel-ucode \
-grub \
-efibootmgr \
 "
 
 to_install_aur="yay-bin"
@@ -243,9 +241,39 @@ $install_kde && systemctl enable sddm.service
 systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
 
-# install and configure grub
-grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
-grub-mkconfig -o /boot/grub/grub.cfg
+# install systemd-boot
+bootctl --path=/boot install
+mkdir -p /boot/loader/entries
+
+# automatic systemd-boot update
+echo > /etc/pacman.d/hooks/100-systemd-boot.hook <<EOSF
+[Trigger]
+Type = Package
+Operation = Upgrade
+Target = systemd
+
+[Action]
+Description = Updating systemd-boot
+When = PostTransaction
+Exec = /usr/bin/bootctl update
+EOSF
+
+# systemd-boot configuration
+echo > /boot/loader/loader.conf <<EOSF
+default arch
+timeout 5
+console-mode max
+editor no
+EOSF
+
+# arch systemd-boot entry
+echo > /boot/loader/entries/arch.conf <<EOSF
+title   Arch Linux
+linux   /vmlinuz-linux
+initrd  /intel-ucode.img
+initrd  /initramfs-linux.img
+options root=$root_partition rw
+EOSF
 
 # leave the chroot
 exit
