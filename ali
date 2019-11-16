@@ -8,8 +8,7 @@
 # /dev/sda3    Microsoft Reserved Partition      16MiB
 # /dev/sda4    Microsoft basic data partition    Arbitrary
 # /dev/sda5    Linux Boot                        260MiB
-# /dev/sda6    Linux Swap                        8GiB
-# /dev/sda7    Linux Root                        Remaining space
+# /dev/sda6    Linux LVM                         Remaining space
 
 # DEFAULTS
 # ========
@@ -34,10 +33,8 @@ intel-ucode \
 
 to_install_aur="yay-bin"
 
-efi_partition=/dev/sda5
-boot_partition=/dev/sda6
-swap_partition=/dev/sda7
-root_partition=/dev/sda8
+boot_partition=/dev/sda5
+lvm_partition=/dev/sda6
 time_zone=Europe/Rome
 locale=en_US
 hostname=quarnobox
@@ -62,11 +59,10 @@ Current config
 ==============
 
 [b]oot          => $boot_partition
-[s]wap          => $swap_partition
-[r]oot          => $root_partition
+[l]vm           => $lvm_partition
 
 [t]ime zone     => $time_zone
-[l]ocale        => $locale
+l[o]cale        => $locale
 [h]ostname      => $hostname
 [u]ser          => $user_name
 [p]assword      => $password
@@ -79,7 +75,7 @@ Installing
 [$(is_installing $install_firefox)] [f]irefox
 [$(is_installing $install_chrome)] [c]hrome
 [$(is_installing $install_chromium)] c[h]romium
-[$(is_installing $install_brave)] br[a]ve
+[$(is_installing $install_brave)] b[r]ave
 [$(is_installing $install_code)] [v]scode
 
 [d]one
@@ -93,10 +89,9 @@ prompt() {
     read -p "> " action
     case "$action" in
         b) read -p "Boot partition => " boot_partition;;
-        s) read -p "Swap partition => " swap_partition;;
-        r) read -p "Root partition => " root_partition;;
+        l) read -p "LVM partition => " lvm_partition;;
         t) read -p "Time zone => " time_zone;;
-        l) read -p "Locale => " locale;;
+        o) read -p "Locale => " locale;;
         h) read -p "Hostname => " hostname;;
         u) read -p "User name => " user_name;;
         p) read -p "Password => " password;;
@@ -107,7 +102,7 @@ prompt() {
         f) $install_firefox && install_firefox=false || install_firefox=true;;
         c) $install_chrome && install_chrome=false || install_chrome=true;;
         h) $install_chromium && install_chromium=false || install_chromium=true;;
-        a) $install_brave && install_brave=false || install_brave=true;;
+        r) $install_brave && install_brave=false || install_brave=true;;
         v) $install_code && install_code=false || install_code=true;;
         d) repeat=false;;
         x) exit 0;;
@@ -136,16 +131,22 @@ $install_code && to_install_aur="$to_install code"
 # update the system clock
 timedatectl set-ntp true
 
+# create the lvm volumes
+pvcreate $lvm_partition
+vgcreate arch $lvm_partition
+lvcreate -L 8G arch -n swap
+lvcreate -l 100%FREE arch -n root
+
 # format the partitions
 mkfs.vfat -F 32 "$boot_partition"
-mkfs.f2fs -f "$root_partition"
-mkswap -f "$swap_partition"
+mkfs.f2fs -f /dev/arch/root
+mkswap -f /dev/arch/swap
 
 # mount the file systems
-mount "$root_partition" /mnt
+mount /dev/arch/root /mnt
 mkdir /mnt/boot
 mount "$boot_partition" /mnt/boot
-swapon "$swap_partition"
+swapon /dev/arch/swap
 
 # INSTALLATION
 # ============
@@ -238,6 +239,12 @@ $install_kde && systemctl enable sddm.service
 systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
 
+# enable lvm2
+sed -i "s/block/block lvm2/" /etc/mkinitcpio.conf
+
+# recreate the initramfs image
+mkinitcpio -P
+
 # install systemd-boot
 bootctl --path=/boot install
 mkdir -p /boot/loader/entries
@@ -269,7 +276,7 @@ title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
 initrd  /initramfs-linux.img
-options root=$root_partition rw
+options root=/dev/arch/root rw
 EOSF
 
 # leave the chroot
