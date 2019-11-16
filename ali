@@ -19,6 +19,7 @@ base \
 base-devel \
 linux \
 linux-firmware \
+f2fs-tools \
 sudo \
 openssh \
 git \
