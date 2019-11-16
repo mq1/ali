@@ -17,6 +17,8 @@
 to_install=" \
 base \
 base-devel \
+linux \
+linux-firmware \
 f2fs-tools \
 sudo \
 networkmanager \
