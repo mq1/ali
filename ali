@@ -19,9 +19,7 @@ base \
 base-devel \
 linux \
 linux-firmware \
-f2fs-tools \
 sudo \
-networkmanager \
 openssh \
 git \
 zsh \
@@ -29,8 +27,6 @@ flatpak \
 noto-fonts \
 noto-fonts-cjk \
 noto-fonts-emoji \
-mpv \
-youtube-dl \
 ntfs-3g \
 intel-ucode \
 "
