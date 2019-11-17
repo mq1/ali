@@ -29,7 +29,7 @@ ntfs-3g \
 intel-ucode\
 )
 
-boot_partition=/dev/sda2
+efi_partition=/dev/sda2
 lvm_partition=/dev/sda5
 luks=false
 time_zone=Europe/Rome
@@ -53,9 +53,9 @@ current_config() {
 Current config
 ==============
 
-[b]oot          => $boot_partition
+[e]fi          => $efi_partition
 [l]vm           => $lvm_partition
-[$(is_installing $luks)] [e]ncrypt_lvm
+[$(is_installing $luks)] e[n]crypt_lvm
 
 [t]ime zone     => $time_zone
 l[o]cale        => $locale
@@ -64,13 +64,13 @@ l[o]cale        => $locale
 [p]assword      => $password
 
 Installing
-[$(is_installing $install_nvidia)] [n]vidia
+[$(is_installing $install_nvidia)] n[v]idia
 [$(is_installing $install_intel)] [i]ntel-media-driver
 [$(is_installing $install_gnome)] [g]nome
 [$(is_installing $install_kde)] [k]de
 [$(is_installing $install_firefox)] [f]irefox
 [$(is_installing $install_chromium)] [c]hromium
-[$(is_installing $install_code)] [v]scode (open-source release)
+[$(is_installing $install_code)] v[s]code (open-source release)
 
 [d]one
 e[x]it
@@ -82,21 +82,21 @@ EOF
 prompt() {
     read -p "> " action
     case "$action" in
-        b) read -p "Boot partition => " boot_partition;;
+        e) read -p "EFI partition => " efi_partition;;
         l) read -p "LVM partition => " lvm_partition;;
-        e) $luks && luks=false || luks=true;;
+        n) $luks && luks=false || luks=true;;
         t) read -p "Time zone => " time_zone;;
         o) read -p "Locale => " locale;;
         h) read -p "Hostname => " hostname;;
         u) read -p "User name => " user_name;;
         p) read -p "Password => " password;;
-        n) $install_nvidia && install_nvidia=false || install_nvidia=true;;
+        v) $install_nvidia && install_nvidia=false || install_nvidia=true;;
         i) $install_intel && install_intel=false || install_intel=true;;
         g) $install_gnome && install_gnome=false || install_gnome=true && install_kde=false;;
         k) $install_kde && install_kde=false || install_kde=true && install_gnome=false;;
         f) $install_firefox && install_firefox=false || install_firefox=true;;
         c) $install_chromium && install_chromium=false || install_chromium=true;;
-        v) $install_code && install_code=false || install_code=true;;
+        s) $install_code && install_code=false || install_code=true;;
         d) repeat=false;;
         x) exit 0;;
     esac
@@ -142,8 +142,8 @@ mkswap -f /dev/arch/swap
 
 # mount the file systems
 mount /dev/arch/root /mnt
-mkdir /mnt/boot
-mount "$boot_partition" /mnt/boot
+mkdir /mnt/efi
+mount "$efi_partition" /mnt/efi
 swapon /dev/arch/swap
 
 # INSTALLATION
@@ -201,7 +201,7 @@ useradd -m -s /usr/bin/zsh -G wheel "$user_name"
 echo "$user_name:$password" | chpasswd
 
 # add the wheel group (without password) to the sudoers file
-echo "%wheel ALL=(ALL) NOPASSWD: ALL" | EDITOR='tee -a' visudo
+echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
 
 # enable display manager service
 $install_gnome && systemctl enable gdm.service
@@ -212,51 +212,22 @@ systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
 
 # mkinitcpio hooks
-sed -i "s/^HOOKS=.*/HOOKS=(base systemd autodetect block sd-lvm2 fsck filesystems)/" /etc/mkinitcpio.conf
-
-# enable hooks required for luks
-sed -i "s/^HOOKS=.*/HOOKS=(base systemd autodetect block keyboard sd-vconsole sd-encrypt sd-lvm2 fsck filesystems)/" /etc/mkinitcpio.conf
+sed -i "s/^HOOKS/#HOOKS/" /etc/mkinitcpio.conf
+if $luks; then
+    echo "s/^HOOKS=.*/HOOKS=(base systemd autodetect block keyboard sd-vconsole sd-encrypt sd-lvm2 fsck filesystems)/" >> /etc/mkinitcpio.conf
+else
+    echo "s/^HOOKS=.*/HOOKS=(base systemd autodetect block sd-lvm2 fsck filesystems)/" >> /etc/mkinitcpio.conf
+fi
 
 # lz4 instead of gzip for faster boot time
-sed -i 's/#COMPRESSION="lz4"/#COMPRESSION="lz4"/' /etc/mkinitcpio.conf
+sed -i 's/#COMPRESSION="lz4"/COMPRESSION="lz4"/' /etc/mkinitcpio.conf
 
 # recreate the initramfs image
 mkinitcpio -P
 
-# install systemd-boot
-bootctl --path=/boot install
-mkdir -p /boot/loader/entries
-
-# automatic systemd-boot update
-mkdir -p /etc/pacman.d/hooks
-cat > /etc/pacman.d/hooks/100-systemd-boot.hook <<EOSF
-[Trigger]
-Type = Package
-Operation = Upgrade
-Target = systemd
-
-[Action]
-Description = Updating systemd-boot
-When = PostTransaction
-Exec = /usr/bin/bootctl update
-EOSF
-
-# systemd-boot configuration
-cat > /boot/loader/loader.conf <<EOSF
-default arch
-timeout 5
-console-mode max
-editor no
-EOSF
-
-# arch systemd-boot entry
-cat > /boot/loader/entries/arch.conf <<EOSF
-title Arch Linux
-linux /vmlinuz-linux
-initrd /intel-ucode.img
-initrd /initramfs-linux.img
-options$boot_options root=/dev/arch/root rw
-EOSF
+# install grub
+grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg
 
 # leave the chroot
 exit
