@@ -30,7 +30,7 @@ intel-ucode\
 )
 
 boot_partition=/dev/sda2
-lvm_partition=/dev/sda6
+lvm_partition=/dev/sda5
 luks=false
 time_zone=Europe/Rome
 locale=en_US
