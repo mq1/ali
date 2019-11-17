@@ -13,12 +13,7 @@
 # DEFAULTS
 # ========
 
-to_install=" \
-base \
-base-devel \
-linux \
-linux-firmware \
-f2fs-tools \
+to_install="\
 sudo \
 openssh \
 git \
@@ -152,7 +147,7 @@ swapon /dev/arch/swap
 # ============
 
 # install the packages
-pacstrap /mnt "$to_install"
+pacstrap /mnt base linux linux-firmware
 
 # CONFIGURE THE SYSTEM
 # ====================
@@ -192,6 +187,9 @@ EOSF
 
 # MY STUFF
 # ========
+
+# install the selected packages
+pacman -Syu --noconfirm "$to_install"
 
 # disable the root user
 passwd -l root
