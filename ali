@@ -127,7 +127,8 @@ if "$luks"; then
 fi
 
 # create the lvm volumes
-pvcreate "$lvm_partition"
+vgchange -a n arch # deactivate lvm partitions of an eventual previous install
+pvcreate "$lvm_partition" -ffy
 vgcreate arch "$lvm_partition"
 lvcreate -L 8G arch -n swap
 lvcreate -l 100%FREE arch -n root
