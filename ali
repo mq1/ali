@@ -33,6 +33,7 @@ intel-ucode \
 
 boot_partition=/dev/sda5
 lvm_partition=/dev/sda6
+luks=false
 time_zone=Europe/Rome
 locale=en_US
 hostname=quarnobox
@@ -56,6 +57,7 @@ Current config
 
 [b]oot          => $boot_partition
 [l]vm           => $lvm_partition
+[$(is_installing $luks)] [e]ncrypt_lvm
 
 [t]ime zone     => $time_zone
 l[o]cale        => $locale
@@ -84,6 +86,7 @@ prompt() {
     case "$action" in
         b) read -p "Boot partition => " boot_partition;;
         l) read -p "LVM partition => " lvm_partition;;
+        e) $luks && luks=false || luks=true;;
         t) read -p "Time zone => " time_zone;;
         o) read -p "Locale => " locale;;
         h) read -p "Hostname => " hostname;;
@@ -121,9 +124,16 @@ $install_code && to_install="$to_install code"
 # update the system clock
 timedatectl set-ntp true
 
+if "$luks"; do
+    cryptsetup luksFormat "$lvm_partition"
+    cryptsetup open "$lvm_partition" cryptlvm
+    lvm_partition=/dev/mapper/cryptlvm
+    boot_options=" cryptdevice=$lvm_partition:cryptlvm"
+done
+
 # create the lvm volumes
-pvcreate $lvm_partition
-vgcreate arch $lvm_partition
+pvcreate "$lvm_partition"
+vgcreate arch "$lvm_partition"
 lvcreate -L 8G arch -n swap
 lvcreate -l 100%FREE arch -n root
 
@@ -210,8 +220,11 @@ $install_kde && systemctl enable sddm.service
 systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
 
-# enable lvm2
-sed -i "s/block/block lvm2/" /etc/mkinitcpio.conf
+# mkinitcpio hooks
+sed -i "s/^HOOKS=.*/HOOKS=(base systemd autodetect modconf block sd-lvm2 fsck filesystems)/" /etc/mkinitcpio.conf
+
+# enable hooks required for luks
+$luks && sed -i "s/sd-lvm2/keyboard sd-vconsole sd-encrypt sd-lvm2/" /etc/mkinitcpio.conf
 
 # recreate the initramfs image
 mkinitcpio -P
@@ -247,7 +260,7 @@ title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
 initrd  /initramfs-linux.img
-options root=/dev/arch/root rw
+options$boot_options root=/dev/arch/root rw
 EOSF
 
 # leave the chroot
