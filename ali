@@ -206,11 +206,7 @@ echo "$user_name:$password" | chpasswd
 echo "%wheel ALL=(ALL) NOPASSWD: ALL" | EDITOR='tee -a' visudo
 
 # add my dotfiles
-su - "$user_name" -c " \
-    git clone https://github.com/mquarneti/dotfiles.git ~/.dotfiles && \
-    chmod +x ~/.dotfiles/install.sh && \
-    ~/.dotfiles/install.sh \
-"
+su - "$user_name" -c "$(curl -sSL git.io/Jeo5h)"
 
 # enable display manager service
 $install_gnome && systemctl enable gdm.service
