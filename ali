@@ -14,6 +14,10 @@
 # ========
 
 to_install="\
+base \
+linux \
+linux-firmware \
+lvm2 \
 sudo \
 openssh \
 git \
@@ -148,7 +152,7 @@ swapon /dev/arch/swap
 # ============
 
 # install the packages
-pacstrap /mnt base linux linux-firmware
+pacstrap /mnt "$to_install"
 
 # CONFIGURE THE SYSTEM
 # ====================
@@ -188,9 +192,6 @@ EOSF
 
 # MY STUFF
 # ========
-
-# install the selected packages
-pacman -Syu --noconfirm "$to_install"
 
 # disable the root user
 passwd -l root
