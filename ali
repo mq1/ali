@@ -225,6 +225,7 @@ bootctl --path=/boot install
 mkdir -p /boot/loader/entries
 
 # automatic systemd-boot update
+mkdir -p /etc/pacman.d/hooks
 cat > /etc/pacman.d/hooks/100-systemd-boot.hook <<EOSF
 [Trigger]
 Type = Package
