@@ -17,6 +17,8 @@ base \
 linux \
 linux-firmware \
 lvm2 \
+grub \
+efibootmgr \
 sudo \
 openssh \
 git \
@@ -214,9 +216,9 @@ systemctl enable bluetooth.service
 # mkinitcpio hooks
 sed -i "s/^HOOKS/#HOOKS/" /etc/mkinitcpio.conf
 if $luks; then
-    echo "s/^HOOKS=.*/HOOKS=(base systemd autodetect block keyboard sd-vconsole sd-encrypt sd-lvm2 fsck filesystems)/" >> /etc/mkinitcpio.conf
+    echo "HOOKS=(base systemd autodetect block keyboard sd-vconsole sd-encrypt sd-lvm2 fsck filesystems)" >> /etc/mkinitcpio.conf
 else
-    echo "s/^HOOKS=.*/HOOKS=(base systemd autodetect block sd-lvm2 fsck filesystems)/" >> /etc/mkinitcpio.conf
+    echo "HOOKS=(base systemd autodetect block sd-lvm2 fsck filesystems)" >> /etc/mkinitcpio.conf
 fi
 
 # lz4 instead of gzip for faster boot time
