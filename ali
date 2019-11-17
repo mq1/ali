@@ -124,7 +124,7 @@ $install_code && to_install="$to_install code"
 # update the system clock
 timedatectl set-ntp true
 
-if "$luks"; do
+if "$luks"; then
     cryptsetup luksFormat "$lvm_partition"
     cryptsetup open "$lvm_partition" cryptlvm
     lvm_partition=/dev/mapper/cryptlvm
