@@ -147,7 +147,7 @@ swapon /dev/arch/swap
 # ============
 
 # install the packages
-pacstrap /mnt base linux linux-firmware
+pacstrap /mnt base linux linux-firmware f2fs-tools
 
 # CONFIGURE THE SYSTEM
 # ====================
