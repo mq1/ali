@@ -204,9 +204,6 @@ echo "$user_name:$password" | chpasswd
 # add the wheel group (without password) to the sudoers file
 echo "%wheel ALL=(ALL) NOPASSWD: ALL" | EDITOR='tee -a' visudo
 
-# add my dotfiles
-su - "$user_name" -c "$(curl -sSL git.io/Jeo5h)"
-
 # enable display manager service
 $install_gnome && systemctl enable gdm.service
 $install_kde && systemctl enable sddm.service
