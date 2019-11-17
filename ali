@@ -129,7 +129,7 @@ if "$luks"; then
     cryptsetup open "$lvm_partition" cryptlvm
     lvm_partition=/dev/mapper/cryptlvm
     boot_options=" cryptdevice=$lvm_partition:cryptlvm"
-done
+fi
 
 # create the lvm volumes
 pvcreate "$lvm_partition"
