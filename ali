@@ -225,7 +225,7 @@ bootctl --path=/boot install
 mkdir -p /boot/loader/entries
 
 # automatic systemd-boot update
-echo > /etc/pacman.d/hooks/100-systemd-boot.hook <<EOSF
+cat > /etc/pacman.d/hooks/100-systemd-boot.hook <<EOSF
 [Trigger]
 Type = Package
 Operation = Upgrade
@@ -238,7 +238,7 @@ Exec = /usr/bin/bootctl update
 EOSF
 
 # systemd-boot configuration
-echo > /boot/loader/loader.conf <<EOSF
+cat > /boot/loader/loader.conf <<EOSF
 default arch
 timeout 5
 console-mode max
@@ -246,7 +246,7 @@ editor no
 EOSF
 
 # arch systemd-boot entry
-echo > /boot/loader/entries/arch.conf <<EOSF
+cat > /boot/loader/entries/arch.conf <<EOSF
 title Arch Linux
 linux /vmlinuz-linux
 initrd /intel-ucode.img
