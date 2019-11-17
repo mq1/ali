@@ -212,10 +212,13 @@ systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
 
 # mkinitcpio hooks
-sed -i "s/^HOOKS=.*/HOOKS=(base systemd autodetect modconf block sd-lvm2 fsck filesystems)/" /etc/mkinitcpio.conf
+sed -i "s/^HOOKS=.*/HOOKS=(base udev autodetect block lvm2 fsck filesystems)/" /etc/mkinitcpio.conf
 
 # enable hooks required for luks
-$luks && sed -i "s/sd-lvm2/keyboard sd-vconsole sd-encrypt sd-lvm2/" /etc/mkinitcpio.conf
+sed -i "s/^HOOKS=.*/HOOKS=(base udev autodetect keyboard keymap block encrypt lvm2 fsck filesystems)/" /etc/mkinitcpio.conf
+
+# lz4 instead of gzip for faster boot time
+sed -i 's/#COMPRESSION="lz4"/#COMPRESSION="lz4"/' /etc/mkinitcpio.conf
 
 # recreate the initramfs image
 mkinitcpio -P
