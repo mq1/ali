@@ -135,7 +135,7 @@ lvcreate -l 100%FREE arch -n root
 
 # format the partitions
 mkfs.vfat -F 32 "$boot_partition"
-mkfs.f2fs -f /dev/arch/root
+mkfs.ext4 /dev/arch/root
 mkswap -f /dev/arch/swap
 
 # mount the file systems
@@ -148,7 +148,7 @@ swapon /dev/arch/swap
 # ============
 
 # install the packages
-pacstrap /mnt base linux linux-firmware f2fs-tools
+pacstrap /mnt base linux linux-firmware
 
 # CONFIGURE THE SYSTEM
 # ====================
