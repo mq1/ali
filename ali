@@ -2,13 +2,12 @@
 
 # SUGGESTED PARTITION SCHEME
 # ==========================
-# DEVICE       PARTITION                         SIZE
-# /dev/sda1    Windows Recovery Environment      500MiB
-# /dev/sda2    Windows ESP                       100MiB
-# /dev/sda3    Microsoft Reserved Partition      16MiB
-# /dev/sda4    Microsoft basic data partition    Arbitrary
-# /dev/sda5    Linux Boot                        260MiB
-# /dev/sda6    Linux LVM                         Remaining space
+# DEVICE       PARTITION                       SIZE
+# /dev/sda1    Windows recovery environment    500MiB
+# /dev/sda2    EFI System                      100MiB
+# /dev/sda3    Microsoft reserved              16MiB
+# /dev/sda4    Microsoft basic data            Arbitrary
+# /dev/sda5    Linux LVM                       Remaining space
 
 # DEFAULTS
 # ========
@@ -30,7 +29,7 @@ ntfs-3g \
 intel-ucode\
 )
 
-boot_partition=/dev/sda5
+boot_partition=/dev/sda2
 lvm_partition=/dev/sda6
 luks=false
 time_zone=Europe/Rome
@@ -138,7 +137,6 @@ lvcreate -L 8G arch -n swap -y
 lvcreate -l 100%FREE arch -n root -y
 
 # format the partitions
-mkfs.vfat -F 32 "$boot_partition"
 mkfs.ext4 /dev/arch/root
 mkswap -f /dev/arch/swap
 
