@@ -13,7 +13,22 @@
 # DEFAULTS
 # ========
 
-to_install=(base linux linux-firmware lvm2 sudo openssh git zsh flatpak noto-fonts noto-fonts-cjk noto-fonts-emoji ntfs-3g intel-ucode)
+to_install=(\
+base \
+linux \
+linux-firmware \
+lvm2 \
+sudo \
+openssh \
+git \
+zsh \
+flatpak \
+noto-fonts \
+noto-fonts-cjk \
+noto-fonts-emoji \
+ntfs-3g \
+intel-ucode\
+)
 
 boot_partition=/dev/sda5
 lvm_partition=/dev/sda6
@@ -137,7 +152,7 @@ swapon /dev/arch/swap
 # ============
 
 # install the packages
-pacstrap /mnt $to_install
+pacstrap /mnt "${to_install[@]}"
 
 # CONFIGURE THE SYSTEM
 # ====================
