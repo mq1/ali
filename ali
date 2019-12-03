@@ -52,7 +52,7 @@ is_installing() {
 }
 
 current_config() {
-    cat <<EOF
+    cat << EOF
 Current config
 ==============
 
@@ -162,7 +162,7 @@ pacstrap /mnt "${to_install[@]}"
 genfstab -U /mnt >> /mnt/etc/fstab
 
 # write the second part to be executed inside the chroot
-cat > /mnt/part2.sh <<EOF
+cat > /mnt/part2.sh << EOF
 #!/usr/bin/env bash
 
 # set the time zone
@@ -184,7 +184,7 @@ echo "LANG=$locale.UTF-8" > /etc/locale.conf
 echo "$hostname" > /etc/hostname
 
 # add matching entries to /etc/hosts
-cat >> /etc/hosts <<EOSF
+cat >> /etc/hosts << EOSF
 127.0.0.1 localhost
 ::1 localhost
 127.0.1.1 $hostname.localdomain $hostname
