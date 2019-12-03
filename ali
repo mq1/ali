@@ -12,24 +12,24 @@
 # DEFAULTS
 # ========
 
-to_install=(\
-base \
-linux \
-linux-firmware \
-vi \
-lvm2 \
-grub \
-efibootmgr \
-sudo \
-openssh \
-git \
-zsh \
-flatpak \
-noto-fonts \
-noto-fonts-cjk \
-noto-fonts-emoji \
-ntfs-3g \
-intel-ucode\
+to_install=(
+    base
+    linux
+    linux-firmware
+    vi
+    lvm2
+    grub
+    efibootmgr
+    sudo
+    openssh
+    git
+    zsh
+    flatpak
+    noto-fonts
+    noto-fonts-cjk
+    noto-fonts-emoji
+    ntfs-3g
+    intel-ucode
 )
 
 efi_partition=/dev/sda2
