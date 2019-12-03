@@ -16,6 +16,7 @@ to_install=(\
 base \
 linux \
 linux-firmware \
+vi \
 lvm2 \
 grub \
 efibootmgr \
