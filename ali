@@ -83,16 +83,16 @@ EOF
 }
 
 prompt() {
-    read -p "> " action
+    read -rp "> " action
     case "$action" in
-        e) read -p "EFI partition => " efi_partition;;
-        l) read -p "LVM partition => " lvm_partition;;
+        e) read -rp "EFI partition => " efi_partition;;
+        l) read -rp "LVM partition => " lvm_partition;;
         n) $luks && luks=false || luks=true;;
-        t) read -p "Time zone => " time_zone;;
-        o) read -p "Locale => " locale;;
-        h) read -p "Hostname => " hostname;;
-        u) read -p "User name => " user_name;;
-        p) read -p "Password => " password;;
+        t) read -rp "Time zone => " time_zone;;
+        o) read -rp "Locale => " locale;;
+        h) read -rp "Hostname => " hostname;;
+        u) read -rp "User name => " user_name;;
+        p) read -rp "Password => " password;;
         v) $install_nvidia && install_nvidia=false || install_nvidia=true;;
         i) $install_intel && install_intel=false || install_intel=true;;
         g) $install_gnome && install_gnome=false || install_gnome=true && install_kde=false;;
@@ -129,7 +129,6 @@ if "$luks"; then
     cryptsetup luksFormat "$lvm_partition"
     cryptsetup open "$lvm_partition" cryptlvm
     lvm_partition=/dev/mapper/cryptlvm
-    boot_options=" cryptdevice=$lvm_partition:cryptlvm"
 fi
 
 # create the lvm volumes
