@@ -16,18 +16,19 @@ to_install=(
     base
     linux
     linux-firmware
-    vi
     lvm2
+    ntfs-3g
+    intel-ucode
+    vi
     sudo
     openssh
     git
     zsh
+    xorg
     flatpak
     noto-fonts
     noto-fonts-cjk
     noto-fonts-emoji
-    ntfs-3g
-    intel-ucode
 )
 
 boot_partition=/dev/sda2
@@ -111,7 +112,7 @@ done
 
 $install_nvidia && to_install+=(nvidia)
 $install_intel && to_install+=(intel-media-driver)
-$install_gnome && to_install+=(gnome xdg-desktop-portal-gtk xdg-user-dirs-gtk gnome-tweaks gnome-software-packagekit-plugin)
+$install_gnome && to_install+=(gnome xdg-desktop-portal-gtk xdg-user-dirs-gtk gnome-tweaks)
 $install_kde && to_install+=(plasma xdg-desktop-portal-kde xdg-user-dirs plasma-wayland-session kde-applications)
 $install_firefox && to_install+=(firefox)
 $install_chromium && to_install+=(chromium)
