@@ -54,7 +54,7 @@ current_config() {
 Current config
 ==============
 
-[b]oot           => $boot_partition
+[b]oot          => $boot_partition
 [l]vm           => $lvm_partition
 [$(is_installing $luks)] [e]ncrypt_lvm
 
