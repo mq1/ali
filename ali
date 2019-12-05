@@ -2,12 +2,13 @@
 
 # SUGGESTED PARTITION SCHEME
 # ==========================
-# DEVICE       PARTITION                       SIZE
+# DEVICE       TYPE                            SIZE
 # /dev/sda1    Windows recovery environment    500MiB
 # /dev/sda2    EFI System                      100MiB
 # /dev/sda3    Microsoft reserved              16MiB
 # /dev/sda4    Microsoft basic data            Arbitrary
-# /dev/sda5    Linux LVM                       Remaining space
+# /dev/sda5    Linux Boot                      260MiB
+# /dev/sda6    Linux LVM                       Remaining space
 
 # DEFAULTS
 # ========
@@ -17,6 +18,8 @@ to_install=(
     linux
     linux-firmware
     lvm2
+    grub
+    efibootmgr
     ntfs-3g
     intel-ucode
     vi
@@ -31,8 +34,9 @@ to_install=(
     noto-fonts-emoji
 )
 
-boot_partition=/dev/sda2
-lvm_partition=/dev/sda5
+efi_partition=/dev/sda2
+boot_partition=/dev/sda5
+lvm_partition=/dev/sda6
 luks=false
 time_zone=Europe/Rome
 locale=en_US
@@ -55,9 +59,10 @@ current_config() {
 Current config
 ==============
 
+[e]fi           => $efi_partition
 [b]oot          => $boot_partition
 [l]vm           => $lvm_partition
-[$(is_installing $luks)] [e]ncrypt_lvm
+[$(is_installing $luks)] e[n]crypt_lvm
 
 [t]ime zone     => $time_zone
 l[o]cale        => $locale
@@ -66,13 +71,13 @@ l[o]cale        => $locale
 [p]assword      => $password
 
 Installing
-[$(is_installing $install_nvidia)] [n]vidia
+[$(is_installing $install_nvidia)] n[v]idia
 [$(is_installing $install_intel)] [i]ntel-media-driver
 [$(is_installing $install_gnome)] [g]nome
 [$(is_installing $install_kde)] [k]de
 [$(is_installing $install_firefox)] [f]irefox
 [$(is_installing $install_chromium)] [c]hromium
-[$(is_installing $install_code)] [v]scode (open-source release)
+[$(is_installing $install_code)] v[s]code (open-source release)
 
 [d]one
 e[x]it
@@ -84,21 +89,22 @@ EOF
 prompt() {
     read -rp "> " action
     case "$action" in
+        e) read -rp "EFI partition => " efi_partition;;
         b) read -rp "Boot partition => " boot_partition;;
         l) read -rp "LVM partition => " lvm_partition;;
-        e) $luks && luks=false || luks=true;;
+        n) $luks && luks=false || luks=true;;
         t) read -rp "Time zone => " time_zone;;
         o) read -rp "Locale => " locale;;
         h) read -rp "Hostname => " hostname;;
         u) read -rp "User name => " user_name;;
         p) read -rp "Password => " password;;
-        n) $install_nvidia && install_nvidia=false || install_nvidia=true;;
+        v) $install_nvidia && install_nvidia=false || install_nvidia=true;;
         i) $install_intel && install_intel=false || install_intel=true;;
         g) $install_gnome && install_gnome=false || install_gnome=true && install_kde=false;;
         k) $install_kde && install_kde=false || install_kde=true && install_gnome=false;;
         f) $install_firefox && install_firefox=false || install_firefox=true;;
         c) $install_chromium && install_chromium=false || install_chromium=true;;
-        v) $install_code && install_code=false || install_code=true;;
+        s) $install_code && install_code=false || install_code=true;;
         d) repeat=false;;
         x) exit 0;;
     esac
@@ -128,7 +134,6 @@ if "$luks"; then
     cryptsetup luksFormat "$lvm_partition"
     cryptsetup open "$lvm_partition" cryptlvm
     lvm_partition=/dev/mapper/cryptlvm
-    boot_options=" cryptdevice=$lvm_partition:cryptlvm"
 fi
 
 # create the lvm volumes
@@ -139,13 +144,15 @@ lvcreate -L 8G arch -n swap -y
 lvcreate -l 100%FREE arch -n root -y
 
 # format the partitions
+mkfs.ext4 "$boot_partition"
 mkfs.ext4 /dev/arch/root
 mkswap -f /dev/arch/swap
 
 # mount the file systems
 mount /dev/arch/root /mnt
-mkdir /mnt/boot
+mkdir /mnt/boot /mnt/efi
 mount "$boot_partition" /mnt/boot
+mount "$efi_partition" /mnt/efi
 swapon /dev/arch/swap
 
 # INSTALLATION
@@ -227,39 +234,9 @@ sed -i 's/#COMPRESSION="lz4"/COMPRESSION="lz4"/' /etc/mkinitcpio.conf
 # recreate the initramfs image
 mkinitcpio -P
 
-# install systemd-boot
-bootctl --path=/boot install
-mkdir -p /boot/loader/entries
-
-# automatic systemd-boot update
-mkdir -p /etc/pacman.d/hooks
-cat > /etc/pacman.d/hooks/100-systemd-boot.hook << EOSF
-[Trigger]
-Type = Package
-Operation = Upgrade
-Target = systemd
-[Action]
-Description = Updating systemd-boot
-When = PostTransaction
-Exec = /usr/bin/bootctl update
-EOSF
-
-# systemd-boot configuration
-cat > /boot/loader/loader.conf << EOSF
-default arch
-timeout 5
-console-mode max
-editor no
-EOSF
-
-# arch systemd-boot entry
-cat > /boot/loader/entries/arch.conf << EOSF
-title Arch Linux
-linux /vmlinuz-linux
-initrd /intel-ucode.img
-initrd /initramfs-linux.img
-options$boot_options root=/dev/arch/root rw
-EOSF
+# install grub
+grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg
 
 # leave the chroot
 exit
