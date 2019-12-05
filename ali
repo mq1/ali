@@ -144,8 +144,8 @@ lvcreate -L 8G arch -n swap -y
 lvcreate -l 100%FREE arch -n root -y
 
 # format the partitions
-mkfs.ext4 "$boot_partition"
-mkfs.ext4 /dev/arch/root
+mkfs.ext4 -F "$boot_partition"
+mkfs.ext4 -F /dev/arch/root
 mkswap -f /dev/arch/swap
 
 # mount the file systems
