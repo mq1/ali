@@ -118,7 +118,7 @@ done
 
 $install_nvidia && to_install+=(nvidia)
 $install_intel && to_install+=(intel-media-driver)
-$install_gnome && to_install+=(gnome xdg-desktop-portal-gtk xdg-user-dirs-gtk gnome-tweaks)
+$install_gnome && to_install+=(gnome xdg-desktop-portal-gtk gnome-tweaks)
 $install_kde && to_install+=(plasma xdg-desktop-portal-kde xdg-user-dirs plasma-wayland-session kde-applications)
 $install_firefox && to_install+=(firefox)
 $install_chromium && to_install+=(chromium)
