@@ -7,7 +7,7 @@
 # /dev/sda2    EFI System                      100MiB
 # /dev/sda3    Microsoft reserved              16MiB
 # /dev/sda4    Microsoft basic data            Arbitrary
-# /dev/sda5    Linux Boot                      260MiB
+# /dev/sda5    Extended Boot Loader            500MiB
 # /dev/sda6    Linux LVM                       Remaining space
 
 # DEFAULTS
@@ -142,7 +142,7 @@ lvcreate -L 8G arch -n swap -y
 lvcreate -l 100%FREE arch -n root -y
 
 # format the partitions
-mkfs.ext4 -F "$boot_partition"
+mkfs.fat -F 32 "$boot_partition"
 mkfs.ext4 -F /dev/arch/root
 mkswap -f /dev/arch/swap
 
