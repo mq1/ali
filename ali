@@ -7,7 +7,7 @@
 # /dev/sda2    EFI System                      100MiB
 # /dev/sda3    Microsoft reserved              16MiB
 # /dev/sda4    Microsoft basic data            Arbitrary
-# /dev/sda5    Extended Boot Loader            500MiB
+# /dev/sda5    Linux extended boot             500MiB
 # /dev/sda6    Linux LVM                       Remaining space
 
 # DEFAULTS
@@ -237,7 +237,7 @@ sed -i 's/#COMPRESSION="lz4"/COMPRESSION="lz4"/' /etc/mkinitcpio.conf
 mkinitcpio -P
 
 # install systemd-boot
-bootctl install
+bootctl --esp-path=/efi --boot-path=/boot install
 mkdir -p /boot/loader/entries
 
 # automatic systemd-boot update
@@ -250,7 +250,7 @@ Target = systemd
 [Action]
 Description = Updating systemd-boot
 When = PostTransaction
-Exec = /usr/bin/bootctl update
+Exec = /usr/bin/bootctl --esp-path=/efi --boot-path=/boot update
 EOSF
 
 # systemd-boot configuration
