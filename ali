@@ -63,7 +63,7 @@ Current config
 [$(is_installing $luks)] e[n]crypt root
 
 [t]ime zone     => $time_zone
-l[o]cale        => $locale
+[l]ocale        => $locale
 [h]ostname      => $hostname
 [u]ser          => $user_name
 [p]assword      => $password
@@ -92,7 +92,7 @@ prompt() {
         r) read -rp "Root partition => " root_partition;;
         n) $luks && luks=false || luks=true;;
         t) read -rp "Time zone => " time_zone;;
-        o) read -rp "Locale => " locale;;
+        l) read -rp "Locale => " locale;;
         h) read -rp "Hostname => " hostname;;
         u) read -rp "User name => " user_name;;
         p) read -rp "Password => " password;;
