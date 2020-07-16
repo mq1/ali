@@ -134,19 +134,12 @@ if "$luks"; then
     root_partition=/dev/mapper/cryptroot
 fi
 
-# create the lvm volumes
-vgchange -a n arch # deactivate lvm partitions of an eventual previous install
-pvcreate "$lvm_partition" -ffy
-vgcreate arch "$lvm_partition"
-lvcreate -L 8G arch -n swap -y
-lvcreate -l 100%FREE arch -n root -y
-
 # format the partitions
 mkfs.fat -F 32 "$boot_partition"
 mkfs.f2fs -f "$root_partition"
 
 # mount the file systems
-mount /dev/arch/root /mnt
+mount "$root_partition" /mnt
 mkdir /mnt/boot /mnt/efi
 mount "$boot_partition" /mnt/boot
 mount "$efi_partition" /mnt/efi
@@ -272,7 +265,7 @@ title Arch Linux
 linux /vmlinuz-linux
 initrd /intel-ucode.img
 initrd /initramfs-linux.img
-options root=/dev/arch/root rw
+options root=$root_partition rw
 EOSF
 
 # leave the chroot
