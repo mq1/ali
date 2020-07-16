@@ -7,8 +7,8 @@
 # /dev/sda2    EFI System                      100MiB
 # /dev/sda3    Microsoft reserved              16MiB
 # /dev/sda4    Microsoft basic data            Arbitrary
-# /dev/sda5    Linux extended boot             500MiB
-# /dev/sda6    Linux LVM                       Remaining space
+# /dev/sda5    Linux boot                      500MiB
+# /dev/sda6    Linux root                      Remaining space
 
 # DEFAULTS
 # ========
@@ -17,7 +17,7 @@ to_install=(
     base
     linux
     linux-firmware
-    lvm2
+    f2fs-tools
     ntfs-3g
     intel-ucode
     vim
@@ -34,7 +34,7 @@ to_install=(
 
 efi_partition=/dev/sda2
 boot_partition=/dev/sda5
-lvm_partition=/dev/sda6
+root_partition=/dev/sda6
 luks=false
 time_zone=Europe/Rome
 locale=en_US
@@ -59,8 +59,8 @@ Current config
 
 [e]fi           => $efi_partition
 [b]oot          => $boot_partition
-[l]vm           => $lvm_partition
-[$(is_installing $luks)] e[n]crypt_lvm
+[r]oot          => $root_partition
+[$(is_installing $luks)] e[n]crypt root
 
 [t]ime zone     => $time_zone
 l[o]cale        => $locale
@@ -89,7 +89,7 @@ prompt() {
     case "$action" in
         e) read -rp "EFI partition => " efi_partition;;
         b) read -rp "Boot partition => " boot_partition;;
-        l) read -rp "LVM partition => " lvm_partition;;
+        r) read -rp "Root partition => " root_partition;;
         n) $luks && luks=false || luks=true;;
         t) read -rp "Time zone => " time_zone;;
         o) read -rp "Locale => " locale;;
@@ -129,9 +129,9 @@ $install_code && to_install+=(code)
 timedatectl set-ntp true
 
 if "$luks"; then
-    cryptsetup luksFormat "$lvm_partition"
-    cryptsetup open "$lvm_partition" cryptlvm
-    lvm_partition=/dev/mapper/cryptlvm
+    cryptsetup luksFormat -y -v "$root_partition"
+    cryptsetup open "$root_partition" cryptroot
+    root_partition=/dev/mapper/cryptroot
 fi
 
 # create the lvm volumes
@@ -143,15 +143,19 @@ lvcreate -l 100%FREE arch -n root -y
 
 # format the partitions
 mkfs.fat -F 32 "$boot_partition"
-mkfs.ext4 -F /dev/arch/root
-mkswap -f /dev/arch/swap
+mkfs.f2fs -f "$root_partition"
 
 # mount the file systems
 mount /dev/arch/root /mnt
 mkdir /mnt/boot /mnt/efi
 mount "$boot_partition" /mnt/boot
 mount "$efi_partition" /mnt/efi
-swapon /dev/arch/swap
+
+# 8GiB swapfile
+dd if=/dev/zero of=/mnt/swapfile bs=1M count=8192 status=progress
+chmod 600 /mnt/swapfile
+mkswap /mnt/swapfile
+swapon /mnt/swapfile
 
 # INSTALLATION
 # ============
@@ -168,6 +172,7 @@ pacstrap /mnt "${to_install[@]}"
 
 # generate the fstab file
 genfstab -U /mnt >> /mnt/etc/fstab
+echo "/swapfile none swap defaults 0 0" >> /mnt/etc/fstab
 
 # write the second part to be executed inside the chroot
 cat > /mnt/part2.sh << EOF
@@ -225,9 +230,9 @@ systemctl enable bluetooth.service
 # mkinitcpio hooks
 sed -i "s/^HOOKS/#HOOKS/" /etc/mkinitcpio.conf
 if $luks; then
-    echo "HOOKS=(base systemd autodetect block keyboard sd-vconsole sd-encrypt sd-lvm2 fsck filesystems)" >> /etc/mkinitcpio.conf
+    echo "HOOKS=(base systemd autodetect block keyboard sd-vconsole sd-encrypt fsck filesystems)" >> /etc/mkinitcpio.conf
 else
-    echo "HOOKS=(base systemd autodetect block sd-lvm2 fsck filesystems)" >> /etc/mkinitcpio.conf
+    echo "HOOKS=(base systemd autodetect block fsck filesystems)" >> /etc/mkinitcpio.conf
 fi
 
 # lz4 instead of gzip for faster boot time
