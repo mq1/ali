@@ -129,7 +129,7 @@ $install_code && to_install+=(code)
 timedatectl set-ntp true
 
 if "$luks"; then
-    boot_options=rd.luks.name="$root_partition"
+    boot_options=rd.luks.name="$root_partition"=cryptroot
     cryptsetup luksFormat -y -v "$root_partition"
     cryptsetup open "$root_partition" cryptroot
     root_partition=/dev/mapper/cryptroot
