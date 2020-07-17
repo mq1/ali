@@ -7,7 +7,7 @@
 # /dev/sda2    EFI System                      100MiB
 # /dev/sda3    Microsoft reserved              16MiB
 # /dev/sda4    Microsoft basic data            Arbitrary
-# /dev/sda5    Linux boot                      500MiB
+# /dev/sda5    Linux extended boot             500MiB
 # /dev/sda6    Linux root                      Remaining space
 
 # DEFAULTS
