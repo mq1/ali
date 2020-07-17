@@ -129,6 +129,7 @@ $install_code && to_install+=(code)
 timedatectl set-ntp true
 
 if "$luks"; then
+    boot_options=rd.luks.name="$root_partition"
     cryptsetup luksFormat -y -v "$root_partition"
     cryptsetup open "$root_partition" cryptroot
     root_partition=/dev/mapper/cryptroot
@@ -265,7 +266,7 @@ title Arch Linux
 linux /vmlinuz-linux
 initrd /intel-ucode.img
 initrd /initramfs-linux.img
-options root=$root_partition rw
+options$boot_options root=$root_partition rw
 EOSF
 
 # leave the chroot
