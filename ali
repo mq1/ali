@@ -17,6 +17,7 @@ to_install=(
     base
     linux
     linux-firmware
+    util-linux
     f2fs-tools
     ntfs-3g
     intel-ucode
@@ -129,7 +130,7 @@ $install_code && to_install+=(code)
 timedatectl set-ntp true
 
 if "$luks"; then
-    boot_options=rd.luks.name="$root_partition"=cryptroot
+    boot_options="rd.luks.name=$root_partition=cryptroot rd.luks.options=discard"
     cryptsetup luksFormat -y -v "$root_partition"
     cryptsetup open "$root_partition" cryptroot
     root_partition=/dev/mapper/cryptroot
@@ -220,6 +221,9 @@ $install_kde && systemctl enable sddm.service
 # enable networkmanager and bluetooth services
 systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
+
+# enable fstrim timer
+systemctl enable fstrim.timer
 
 # mkinitcpio hooks
 sed -i "s/^HOOKS/#HOOKS/" /etc/mkinitcpio.conf
