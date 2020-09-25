@@ -26,11 +26,11 @@ to_install=(
     openssh
     git
     zsh
-    xorg
     flatpak
-    noto-fonts
-    noto-fonts-cjk
-    noto-fonts-emoji
+)
+
+to_install_flatpak=(
+    org.mozilla.firefox
 )
 
 efi_partition=/dev/sda2
@@ -213,6 +213,9 @@ echo "$user_name:$password" | chpasswd
 
 # add the wheel group (without password) to the sudoers file
 echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
+
+# install flatpak packages
+su "$user_name" -c "flatpak install -y ${to_install[@]}"
 
 # enable display manager service
 $install_gnome && systemctl enable gdm.service
