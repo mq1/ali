@@ -279,7 +279,7 @@ title Arch Linux
 linux /vmlinuz-linux
 initrd /intel-ucode.img
 initrd /initramfs-linux.img
-options apparmor=1 $boot_options root=$root_partition rw
+options $boot_options root=$root_partition rw
 EOSF
 
 # leave the chroot
