@@ -17,6 +17,7 @@ to_install=(
     base
     linux
     linux-firmware
+    apparmor
     util-linux
     f2fs-tools
     ntfs-3g
@@ -48,6 +49,8 @@ install_kde=false
 install_firefox=true
 install_chromium=false
 install_code=false
+
+boot_options="apparmor=1 lsm=lockdown,yama,apparmor"
 
 is_installing() {
     $1 && echo "*" || echo " "
@@ -130,7 +133,7 @@ $install_code && to_install+=(code)
 timedatectl set-ntp true
 
 if "$luks"; then
-    boot_options="rd.luks.name=$root_partition=cryptroot rd.luks.options=discard"
+    boot_options="$boot_options rd.luks.name=$root_partition=cryptroot rd.luks.options=discard"
     cryptsetup luksFormat -y -v "$root_partition"
     cryptsetup open "$root_partition" cryptroot
     root_partition=/dev/mapper/cryptroot
@@ -228,6 +231,9 @@ systemctl enable bluetooth.service
 # enable fstrim timer
 systemctl enable fstrim.timer
 
+# enable apparmor profiles
+systemctl enable apparmor.service
+
 # mkinitcpio hooks
 sed -i "s/^HOOKS/#HOOKS/" /etc/mkinitcpio.conf
 if $luks; then
@@ -273,7 +279,7 @@ title Arch Linux
 linux /vmlinuz-linux
 initrd /intel-ucode.img
 initrd /initramfs-linux.img
-options$boot_options root=$root_partition rw
+options apparmor=1 $boot_options root=$root_partition rw
 EOSF
 
 # leave the chroot
