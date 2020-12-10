@@ -153,8 +153,8 @@ btrfs subvolume create /mnt/home
 # ============
 
 # pick the 5 fastest up-to-date mirrors from Italy and Germany
-pacman -Sy --noconfirm pacman-contrib
-curl -s "https://www.archlinux.org/mirrorlist/?country=IT&country=DE&protocol=https&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' | rankmirrors -n 5 - > /etc/pacman.d/mirrorlist
+#pacman -Sy --noconfirm pacman-contrib
+#curl -s "https://www.archlinux.org/mirrorlist/?country=IT&country=DE&protocol=https&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' | rankmirrors -n 5 - > /etc/pacman.d/mirrorlist
 
 # install the packages
 pacstrap /mnt "${to_install[@]}"
