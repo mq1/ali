@@ -5,7 +5,7 @@
 # DEVICE       TYPE                            SIZE
 # /dev/sda1    EFI System (/efi)               600MiB
 # /dev/sda2    Linux filesystem (/boot)        1GiB
-# /dev/sda3    Linux filesystem (/root)        Remaining disk space
+# /dev/sda3    Linux filesystem (/)            Remaining disk space
 
 # DEFAULTS
 # ========
@@ -16,7 +16,7 @@ to_install=(
     linux-firmware
     apparmor
     util-linux
-    f2fs-tools
+    btrfs-progs
     ntfs-3g
     intel-ucode
     vim
@@ -130,7 +130,7 @@ $install_code && to_install+=(code)
 timedatectl set-ntp true
 
 if "$luks"; then
-    boot_options="$boot_options rd.luks.name=$root_partition=cryptroot rd.luks.options=discard"
+    boot_options="$boot_options rd.luks.name=${root_partition}=cryptroot rd.luks.options=discard"
     cryptsetup luksFormat -y -v "$root_partition"
     cryptsetup open "$root_partition" cryptroot
     root_partition=/dev/mapper/cryptroot
@@ -138,13 +138,16 @@ fi
 
 # format the partitions
 mkfs.fat -F 32 "$boot_partition"
-mkfs.f2fs -f "$root_partition"
+mkfs.btrfs "$root_partition"
 
 # mount the file systems
 mount "$root_partition" /mnt
 mkdir /mnt/boot /mnt/efi
 mount "$boot_partition" /mnt/boot
 mount "$efi_partition" /mnt/efi
+
+btrfs subvolume create /mnt/root1
+btrfs subvolume create /mnt/home
 
 # INSTALLATION
 # ============
