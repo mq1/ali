@@ -3,12 +3,9 @@
 # SUGGESTED PARTITION SCHEME
 # ==========================
 # DEVICE       TYPE                            SIZE
-# /dev/sda1    Windows recovery environment    500MiB
-# /dev/sda2    EFI System                      100MiB
-# /dev/sda3    Microsoft reserved              16MiB
-# /dev/sda4    Microsoft basic data            Arbitrary
-# /dev/sda5    Linux extended boot             500MiB
-# /dev/sda6    Linux root                      Remaining space
+# /dev/sda1    EFI System (/efi)               600MiB
+# /dev/sda2    Linux filesystem (/boot)        1GiB
+# /dev/sda3    Linux filesystem (/root)        Remaining disk space
 
 # DEFAULTS
 # ========
@@ -34,9 +31,9 @@ to_install_flatpak=(
     org.mozilla.firefox
 )
 
-efi_partition=/dev/sda2
-boot_partition=/dev/sda5
-root_partition=/dev/sda6
+efi_partition=/dev/sda1
+boot_partition=/dev/sda2
+root_partition=/dev/sda3
 luks=false
 time_zone=Europe/Rome
 locale=en_US
@@ -149,12 +146,6 @@ mkdir /mnt/boot /mnt/efi
 mount "$boot_partition" /mnt/boot
 mount "$efi_partition" /mnt/efi
 
-# 8GiB swapfile
-dd if=/dev/zero of=/mnt/swapfile bs=1M count=8192 status=progress
-chmod 600 /mnt/swapfile
-mkswap /mnt/swapfile
-swapon /mnt/swapfile
-
 # INSTALLATION
 # ============
 
@@ -170,7 +161,22 @@ pacstrap /mnt "${to_install[@]}"
 
 # generate the fstab file
 genfstab -U /mnt >> /mnt/etc/fstab
-echo "/swapfile none swap defaults 0 0" >> /mnt/etc/fstab
+
+HALF_RAM="$(expr $(free -g | grep -oP '\d+' | head -n 1) / 2)"
+RAM_CHUNK_SIZE="$(expr $HALF_RAM / $(nproc))"
+
+# udev rule for zram
+mkdir -p /etc/modules-load.d /etc/modprobe.d /etc/udev/rules.d
+echo 'zram' > /etc/modules-load.d/zram.conf
+echo 'options zram num_devices=2' > /etc/modprobe.d/zram.conf
+
+for i in $(seq 1 $(nproc)); do
+    echo "KERNEL==\"zram${i}\", ATTR{disksize}=\"${RAM_CHUNK_SIZE}\" RUN=\"/usr/bin/mkswap /dev/zram${i}\", TAG+=\"systemd\"" >> /etc/udev/rules.d/99-zram.rules
+done
+
+for i in $(seq 1 $(nproc)); do
+    echo "/dev/zram${i} none swap defaults 0 0" >> /etc/fstab
+done
 
 # write the second part to be executed inside the chroot
 cat > /mnt/part2.sh << EOF
