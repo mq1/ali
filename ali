@@ -27,8 +27,79 @@ to_install=(
     flatpak
 )
 
-to_install_flatpak=(
+to_install_flathub=(
     org.mozilla.firefox
+)
+
+gnome_pacman=(
+    gdm
+    gnome-backgrounds
+    gnome-control-center
+    gnome-disk-utility
+    #gnome-getting-started-docs
+    gnome-keyring
+    #gnome-menus # used in gnome classic
+    #gnome-remote-desktop # GNOME Remote Desktop server
+    gnome-screenshot
+    gnome-session
+    gnome-settings-daemon
+    gnome-shell
+    #gnome-shell-extensions
+    gnome-software
+    gnome-system-monitor
+    gnome-terminal
+    #gnome-user-docs
+    #gnome-user-share
+    #gnome-video-effects
+    grilo-plugins
+    gvfs
+    gvfs-afc
+    gvfs-goa
+    gvfs-google
+    gvfs-gphoto2
+    gvfs-mtp
+    gvfs-nfs
+    gvfs-smb
+    mutter
+    nautilus
+    networkmanager
+    rygel
+    simple-scan
+    sushi
+    tracker
+    tracker3
+    tracker-miners
+    tracker3-miners
+    vino
+    xdg-user-dirs-gtk
+    yelp
+)
+
+gnome_flathub=(
+    org.gnome.baobab # Disk Usage Analyzer
+    org.gnome.Cheese # Cheese
+    org.gnome.eog # Eye of GNOME
+    #org.gnome.Epiphany # GNOME Web 
+    org.gnome.Evince # Evince
+    org.gnome.FileRoller # File Roller
+    org.gnome.gedit # gedit
+    org.gnome.Books # Books
+    org.gnome.Boxes # GNOME Boxes
+    org.gnome.Calculator # GNOME Calculator
+    org.gnome.Calendar # Calendar
+    org.gnome.Characters # GNOME Characters
+    org.gnome.clocks # GNOME Clocks
+    org.gnome.ColorViewer # GNOME Color Manager
+    org.gnome.Contacts # Contacts
+    org.gnome.Documents # Documents
+    org.gnome.font-viewer # GNOME Fonts
+    org.gnome.Logs # GNOME Logs
+    org.gnome.Maps # GNOME Maps
+    org.gnome.Photos # Photos
+    org.gnome.Music # GNOME Music
+    org.gnome.Weather # Weather
+    org.gnome.Totem # Videos
+    org.gnome.Extensions # Extensions
 )
 
 efi_partition=/dev/sda1
@@ -42,7 +113,6 @@ user_name=quarno
 install_nvidia=true
 install_intel=false
 install_gnome=true
-install_kde=false
 install_firefox=true
 install_chromium=false
 install_code=false
@@ -73,7 +143,6 @@ Installing
 [$(is_installing $install_nvidia)] n[v]idia
 [$(is_installing $install_intel)] [i]ntel-media-driver
 [$(is_installing $install_gnome)] [g]nome
-[$(is_installing $install_kde)] [k]de
 [$(is_installing $install_firefox)] [f]irefox
 [$(is_installing $install_chromium)] [c]hromium
 [$(is_installing $install_code)] v[s]code (open-source release)
@@ -99,8 +168,7 @@ prompt() {
         p) read -rp "Password => " password;;
         v) $install_nvidia && install_nvidia=false || install_nvidia=true;;
         i) $install_intel && install_intel=false || install_intel=true;;
-        g) $install_gnome && install_gnome=false || install_gnome=true && install_kde=false;;
-        k) $install_kde && install_kde=false || install_kde=true && install_gnome=false;;
+        g) $install_gnome && install_gnome=false || install_gnome=true;;
         f) $install_firefox && install_firefox=false || install_firefox=true;;
         c) $install_chromium && install_chromium=false || install_chromium=true;;
         s) $install_code && install_code=false || install_code=true;;
@@ -117,8 +185,8 @@ done
 
 $install_nvidia && to_install+=(nvidia)
 $install_intel && to_install+=(intel-media-driver)
+$install_gnome && to_install=("${to_install[@]}" "${gnome_pacman[@]}") && to_install_flathub=("${to_install_flathub[@]}" "${gnome_flathub[@]}")
 $install_gnome && to_install+=(gnome xdg-desktop-portal-gtk gnome-tweaks)
-$install_kde && to_install+=(plasma xdg-desktop-portal-kde plasma-wayland-session kde-applications)
 $install_firefox && to_install+=(firefox)
 $install_chromium && to_install+=(chromium)
 $install_code && to_install+=(code)
@@ -227,7 +295,7 @@ echo "$user_name:$password" | chpasswd
 echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
 
 # install flatpak packages
-su "$user_name" -c "flatpak install -y ${to_install[@]}"
+su "$user_name" -c "flatpak install -y ${to_install_flathub[@]}"
 
 # enable display manager service
 $install_gnome && systemctl enable gdm.service
