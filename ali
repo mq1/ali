@@ -167,8 +167,8 @@ RAM_CHUNK_SIZE="$(expr $HALF_RAM / $(nproc))"
 
 # udev rule for zram
 mkdir -p /etc/modules-load.d /etc/modprobe.d /etc/udev/rules.d
-echo 'zram' > /etc/modules-load.d/zram.conf
-echo 'options zram num_devices=2' > /etc/modprobe.d/zram.conf
+echo zram > /etc/modules-load.d/zram.conf
+echo "options zram num_devices=$(nproc)" > /etc/modprobe.d/zram.conf
 
 for i in $(seq 1 $(nproc)); do
     echo "KERNEL==\"zram${i}\", ATTR{disksize}=\"${RAM_CHUNK_SIZE}\" RUN=\"/usr/bin/mkswap /dev/zram${i}\", TAG+=\"systemd\"" >> /etc/udev/rules.d/99-zram.rules
