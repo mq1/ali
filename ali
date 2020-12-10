@@ -162,8 +162,8 @@ pacstrap /mnt "${to_install[@]}"
 # generate the fstab file
 genfstab -U /mnt >> /mnt/etc/fstab
 
-HALF_RAM="$(expr $(free -g | grep -oP '\d+' | head -n 1) / 2)"
-RAM_CHUNK_SIZE="$(expr $HALF_RAM / $(nproc))"
+HALF_RAM="$(expr $(free -m | grep -oP '\d+' | head -n 1) / 2)"
+RAM_CHUNK_SIZE="$(expr $HALF_RAM / $(nproc))M"
 
 # udev rule for zram
 mkdir -p /etc/modules-load.d /etc/modprobe.d /etc/udev/rules.d
