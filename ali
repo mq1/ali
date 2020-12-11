@@ -104,7 +104,7 @@ gnome_flathub=(
 
 efi_partition=/dev/sda1
 boot_partition=/dev/sda2
-root_partition=/dev/sda3
+toplevel_partition=/dev/sda3
 luks=false
 time_zone=Europe/Rome
 locale=en_US
@@ -128,27 +128,27 @@ current_config() {
 Current config
 ==============
 
-[e]fi           => $efi_partition
-[b]oot          => $boot_partition
-[r]oot          => $root_partition
-[$(is_installing $luks)] e[n]crypt root
+[1] efi            => $efi_partition
+[2] root           => $boot_partition
+[3] toplevel       => $toplevel_partition
+[4] [$(is_installing $luks)] encrypt root
 
-[t]ime zone     => $time_zone
-[l]ocale        => $locale
-[h]ostname      => $hostname
-[u]ser          => $user_name
-[p]assword      => $password
+[10] time zone     => $time_zone
+[11] locale        => $locale
+[12] hostname      => $hostname
+[13] user          => $user_name
+[14] password      => $password
 
 Installing
-[$(is_installing $install_nvidia)] n[v]idia
-[$(is_installing $install_intel)] [i]ntel-media-driver
-[$(is_installing $install_gnome)] [g]nome
-[$(is_installing $install_firefox)] [f]irefox
-[$(is_installing $install_chromium)] [c]hromium
-[$(is_installing $install_code)] v[s]code (open-source release)
+[20] [$(is_installing $install_nvidia)] nvidia
+[21] [$(is_installing $install_intel)] intel-media-driver
+[22] [$(is_installing $install_gnome)] gnome
+[23] [$(is_installing $install_firefox)] firefox
+[24] [$(is_installing $install_chromium)] chromium
+[25] [$(is_installing $install_code)] vscode (open-source release)
 
-[d]one
-e[x]it
+[98] done
+[99] exit
 
 
 EOF
@@ -157,23 +157,23 @@ EOF
 prompt() {
     read -rp "> " action
     case "$action" in
-        e) read -rp "EFI partition => " efi_partition;;
-        b) read -rp "Boot partition => " boot_partition;;
-        r) read -rp "Root partition => " root_partition;;
-        n) $luks && luks=false || luks=true;;
-        t) read -rp "Time zone => " time_zone;;
-        l) read -rp "Locale => " locale;;
-        h) read -rp "Hostname => " hostname;;
-        u) read -rp "User name => " user_name;;
-        p) read -rp "Password => " password;;
-        v) $install_nvidia && install_nvidia=false || install_nvidia=true;;
-        i) $install_intel && install_intel=false || install_intel=true;;
-        g) $install_gnome && install_gnome=false || install_gnome=true;;
-        f) $install_firefox && install_firefox=false || install_firefox=true;;
-        c) $install_chromium && install_chromium=false || install_chromium=true;;
-        s) $install_code && install_code=false || install_code=true;;
-        d) repeat=false;;
-        x) exit 0;;
+        1) read -rp "EFI partition => " efi_partition;;
+        2) read -rp "Boot partition => " boot_partition;;
+        3) read -rp "TopLevel partition => " toplevel_partition;;
+        4) $luks && luks=false || luks=true;;
+        10) read -rp "Time zone => " time_zone;;
+        11) read -rp "Locale => " locale;;
+        12) read -rp "Hostname => " hostname;;
+        13) read -rp "User name => " user_name;;
+        14) read -rp "Password => " password;;
+        20) $install_nvidia && install_nvidia=false || install_nvidia=true;;
+        21) $install_intel && install_intel=false || install_intel=true;;
+        22) $install_gnome && install_gnome=false || install_gnome=true;;
+        23) $install_firefox && install_firefox=false || install_firefox=true;;
+        24) $install_chromium && install_chromium=false || install_chromium=true;;
+        25) $install_code && install_code=false || install_code=true;;
+        98) repeat=false;;
+        99) exit 0;;
     esac
 }
 
@@ -198,18 +198,18 @@ $install_code && to_install+=(code)
 timedatectl set-ntp true
 
 if "$luks"; then
-    boot_options="$boot_options rd.luks.name=${root_partition}=cryptroot rd.luks.options=discard"
-    cryptsetup luksFormat -y -v "$root_partition"
-    cryptsetup open "$root_partition" cryptroot
-    root_partition=/dev/mapper/cryptroot
+    boot_options="$boot_options rd.luks.name=${toplevel_partition}=crypttoplevel rd.luks.options=discard"
+    cryptsetup luksFormat -y -v "$toplevel_partition"
+    cryptsetup open "$toplevel_partition" crypttoplevel
+    toplevel_partition=/dev/mapper/crypttoplevel
 fi
 
 # format the partitions
 mkfs.fat -F 32 "$boot_partition"
-mkfs.btrfs -L toplevel "$root_partition"
+mkfs.btrfs -L toplevel "$toplevel_partition"
 
 # mount the file systems
-mount "$root_partition" /mnt
+mount "$toplevel_partition" /mnt
 mkdir /mnt/boot /mnt/efi
 mount "$boot_partition" /mnt/boot
 mount "$efi_partition" /mnt/efi
@@ -359,7 +359,7 @@ title Arch Linux
 linux /vmlinuz-linux
 initrd /intel-ucode.img
 initrd /initramfs-linux.img
-options $boot_options root=$root_partition rw
+options $boot_options rw
 EOSF
 
 # leave the chroot
