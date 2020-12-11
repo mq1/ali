@@ -302,7 +302,7 @@ echo "$user_name:$password" | chpasswd
 echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
 
 # install flatpak packages
-su "$user_name" -c "flatpak install -y ${to_install_flathub[@]}"
+su "$user_name" -c "flatpak install -y flathub ${to_install_flathub[@]}"
 
 # enable display manager service
 $install_gnome && systemctl enable gdm.service
