@@ -306,7 +306,6 @@ su "$user_name" -c "flatpak install -y ${to_install_flathub[@]}"
 
 # enable display manager service
 $install_gnome && systemctl enable gdm.service
-$install_kde && systemctl enable sddm.service
 
 # enable networkmanager and bluetooth services
 systemctl enable NetworkManager.service
