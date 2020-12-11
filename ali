@@ -131,7 +131,7 @@ Current config
 [1] efi            => $efi_partition
 [2] root           => $boot_partition
 [3] toplevel       => $toplevel_partition
-[4] [$(is_installing $luks)] encrypt root
+[4] [$(is_installing $luks)] encrypt toplevel
 
 [10] time zone     => $time_zone
 [11] locale        => $locale
