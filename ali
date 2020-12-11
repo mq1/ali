@@ -117,7 +117,7 @@ install_firefox=true
 install_chromium=false
 install_code=false
 
-boot_options="apparmor=1 lsm=lockdown,yama,apparmor rootflags=subvol=/root"
+boot_options="apparmor=1 lsm=lockdown,yama,apparmor rootflags=subvol=root"
 
 is_installing() {
     $1 && echo "*" || echo " "
