@@ -5,7 +5,7 @@
 # DEVICE       TYPE                            SIZE
 # /dev/sda1    EFI System (/efi)               600MiB
 # /dev/sda2    Linux filesystem (/boot)        1GiB
-# /dev/sda3    Linux filesystem (/)            Remaining disk space
+# /dev/sda3    Linux filesystem (toplevel)     Remaining disk space
 
 # DEFAULTS
 # ========
@@ -117,7 +117,7 @@ install_firefox=true
 install_chromium=false
 install_code=false
 
-boot_options="apparmor=1 lsm=lockdown,yama,apparmor"
+boot_options="apparmor=1 lsm=lockdown,yama,apparmor rootflags=subvol=/root"
 
 is_installing() {
     $1 && echo "*" || echo " "
@@ -206,7 +206,7 @@ fi
 
 # format the partitions
 mkfs.fat -F 32 "$boot_partition"
-mkfs.btrfs "$root_partition"
+mkfs.btrfs -L toplevel "$root_partition"
 
 # mount the file systems
 mount "$root_partition" /mnt
@@ -214,7 +214,7 @@ mkdir /mnt/boot /mnt/efi
 mount "$boot_partition" /mnt/boot
 mount "$efi_partition" /mnt/efi
 
-btrfs subvolume create /mnt/root1
+btrfs subvolume create /mnt/root
 btrfs subvolume create /mnt/home
 
 # INSTALLATION
@@ -231,22 +231,25 @@ pacstrap /mnt "${to_install[@]}"
 # ====================
 
 # generate the fstab file
-genfstab -U /mnt >> /mnt/etc/fstab
+#genfstab -U /mnt >> /mnt/etc/fstab
+
+echo 'LABEL=toplevel / btrfs subvol=/root,defaults,noatime 0 0' >> /mnt/etc/fstab
+echo 'LABEL=toplevel / btrfs subvol=/home,defaults,noatime 0 0' >> /mnt/etc/fstab
 
 HALF_RAM="$(expr $(free -m | grep -oP '\d+' | head -n 1) / 2)"
 RAM_CHUNK_SIZE="$(expr $HALF_RAM / $(nproc))M"
 
 # udev rule for zram
-mkdir -p /etc/modules-load.d /etc/modprobe.d /etc/udev/rules.d
-echo zram > /etc/modules-load.d/zram.conf
-echo "options zram num_devices=$(nproc)" > /etc/modprobe.d/zram.conf
+mkdir -p /mnt/etc/modules-load.d /mnt/etc/modprobe.d /mnt/etc/udev/rules.d
+echo zram > /mnt/etc/modules-load.d/zram.conf
+echo "options zram num_devices=$(nproc)" > /mnt/etc/modprobe.d/zram.conf
 
 for i in $(seq 1 $(nproc)); do
-    echo "KERNEL==\"zram${i}\", ATTR{disksize}=\"${RAM_CHUNK_SIZE}\" RUN=\"/usr/bin/mkswap /dev/zram${i}\", TAG+=\"systemd\"" >> /etc/udev/rules.d/99-zram.rules
+    echo "KERNEL==\"zram${i}\", ATTR{disksize}=\"${RAM_CHUNK_SIZE}\" RUN=\"/usr/bin/mkswap /dev/zram${i}\", TAG+=\"systemd\"" >> /mnt/etc/udev/rules.d/99-zram.rules
 done
 
 for i in $(seq 1 $(nproc)); do
-    echo "/dev/zram${i} none swap defaults 0 0" >> /etc/fstab
+    echo "/dev/zram${i} none swap defaults 0 0" >> /mnt/etc/fstab
 done
 
 # write the second part to be executed inside the chroot
