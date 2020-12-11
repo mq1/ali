@@ -27,10 +27,6 @@ to_install=(
     flatpak
 )
 
-to_install_flathub=(
-    org.mozilla.firefox
-)
-
 gnome_pacman=(
     gdm
     gnome-backgrounds
@@ -187,7 +183,7 @@ $install_nvidia && to_install+=(nvidia)
 $install_intel && to_install+=(intel-media-driver)
 $install_gnome && to_install=("${to_install[@]}" "${gnome_pacman[@]}") && to_install_flathub=("${to_install_flathub[@]}" "${gnome_flathub[@]}")
 $install_gnome && to_install+=(gnome xdg-desktop-portal-gtk gnome-tweaks)
-$install_firefox && to_install+=(firefox)
+$install_firefox && to_install_flathub+=(org.mozilla.firefox)
 $install_chromium && to_install+=(chromium)
 $install_code && to_install+=(code)
 
