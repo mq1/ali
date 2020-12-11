@@ -210,12 +210,16 @@ mkfs.btrfs -L toplevel "$toplevel_partition"
 
 # mount the file systems
 mount "$toplevel_partition" /mnt
+btrfs subvolume create /mnt/root
+btrfs subvolume create /mnt/home
+umount /mnt
+
+mount -o subvol=root "$toplevel_partition" /mnt
+mount -o subvol=home "$toplevel_partition" /mnt/home
+
 mkdir /mnt/boot /mnt/efi
 mount "$boot_partition" /mnt/boot
 mount "$efi_partition" /mnt/efi
-
-btrfs subvolume create /mnt/root
-btrfs subvolume create /mnt/home
 
 # INSTALLATION
 # ============
@@ -234,7 +238,7 @@ pacstrap /mnt "${to_install[@]}"
 #genfstab -U /mnt >> /mnt/etc/fstab
 
 echo 'LABEL=toplevel / btrfs subvol=/root,defaults,noatime 0 0' >> /mnt/etc/fstab
-echo 'LABEL=toplevel / btrfs subvol=/home,defaults,noatime 0 0' >> /mnt/etc/fstab
+echo 'LABEL=toplevel /home btrfs subvol=/home,defaults,noatime 0 0' >> /mnt/etc/fstab
 
 HALF_RAM="$(expr $(free -m | grep -oP '\d+' | head -n 1) / 2)"
 RAM_CHUNK_SIZE="$(expr $HALF_RAM / $(nproc))M"
