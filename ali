@@ -237,8 +237,8 @@ pacstrap /mnt "${to_install[@]}"
 # generate the fstab file
 #genfstab -U /mnt >> /mnt/etc/fstab
 
-echo 'LABEL=toplevel / btrfs subvol=/root,defaults,noatime 0 0' >> /mnt/etc/fstab
-echo 'LABEL=toplevel /home btrfs subvol=/home,defaults,noatime 0 0' >> /mnt/etc/fstab
+echo 'LABEL=toplevel / btrfs subvol=root,defaults,noatime 0 0' >> /mnt/etc/fstab
+echo 'LABEL=toplevel /home btrfs subvol=home,defaults,noatime 0 0' >> /mnt/etc/fstab
 
 HALF_RAM="$(expr $(free -m | grep -oP '\d+' | head -n 1) / 2)"
 RAM_CHUNK_SIZE="$(expr $HALF_RAM / $(nproc))M"
